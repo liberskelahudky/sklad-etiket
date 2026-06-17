@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#3B1A0D">
+<title>LL Etikety - inventura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<style>
+:root {
+  --ll-orange: #E85520;
+  --ll-brown: #3B1A0D;
+  --ll-olive: #6B7A50;
+  --ll-cream: #F0E8D6;
+  --ll-cream-dark: #E5DBC0;
+  --ll-white: #FAF6EC;
+  --ll-red: #C0392B;
+  --ll-green: #27AE60;
+  --ll-gray: #8B8378;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body {
+  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  background: var(--ll-cream);
+  color: var(--ll-brown);
+  font-size: 16px;
+  min-height: 100vh;
+  overscroll-behavior: none;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+input, select, textarea { font-family: inherit; font-size: 16px; }
+
+/* === LAYOUT === */
+.app { max-width: 720px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; background: var(--ll-cream); }
+.header {
+  background: var(--ll-brown);
+  color: var(--ll-cream);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.header-title { font-weight: 800; font-size: 18px; letter-spacing: 0.3px; }
+.header-title small { display: block; font-size: 11px; font-weight: 500; opacity: 0.75; letter-spacing: 1px; text-transform: uppercase; }
+.header-right { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.user-chip {
+  background: var(--ll-orange);
+  color: white;
+  padding: 5px 11px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 12px;
+}
+.online-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ll-green); display: inline-block; }
+.online-dot.off { background: var(--ll-red); }
+.queue-badge {
+  background: var(--ll-orange);
+  color: white;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.main { flex: 1; padding: 16px; padding-bottom: 90px; }
+
+/* === TABS === */
+.tabs {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--ll-brown);
+  display: flex;
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.2);
+}
+.tab {
+  flex: 1;
+  padding: 10px 4px 12px;
+  color: var(--ll-cream);
+  opacity: 0.55;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: opacity 0.15s;
+  border-top: 3px solid transparent;
+}
+.tab.active { opacity: 1; border-top-color: var(--ll-orange); }
+.tab-icon { font-size: 22px; line-height: 1; }
+
+/* === LOGIN === */
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  background: linear-gradient(180deg, var(--ll-cream) 0%, var(--ll-cream-dark) 100%);
+}
+.login-logo { font-size: 48px; margin-bottom: 8px; }
+.login-title { font-size: 24px; font-weight: 800; color: var(--ll-brown); margin-bottom: 6px; text-align: center; }
+.login-sub { color: var(--ll-gray); margin-bottom: 30px; text-align: center; font-size: 14px; }
+.user-list { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.user-btn {
+  background: white;
+  padding: 16px 20px;
+  border-radius: 12px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ll-brown);
+  border: 2px solid transparent;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.15s;
+}
+.user-btn:hover, .user-btn:active { border-color: var(--ll-orange); }
+.user-btn-role { font-size: 11px; color: var(--ll-gray); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* === CARDS === */
+.card {
+  background: white;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(59,26,13,0.08);
+}
+.card-title { font-size: 13px; font-weight: 700; color: var(--ll-gray); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+/* === SKENOVAT === */
+.action-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.action-btn {
+  padding: 18px 8px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ll-brown);
+  background: white;
+  border: 3px solid transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.action-btn .action-symbol { font-size: 28px; font-weight: 800; line-height: 1; }
+.action-btn.active { background: var(--ll-brown); color: var(--ll-cream); }
+.action-btn[data-act="+"].active { background: var(--ll-green); color: white; }
+.action-btn[data-act="-"].active { background: var(--ll-orange); color: white; }
+.action-btn[data-act="="].active { background: var(--ll-brown); color: var(--ll-cream); }
+
+.scan-btn {
+  width: 100%;
+  background: var(--ll-orange);
+  color: white;
+  padding: 22px;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 14px rgba(232,85,32,0.3);
+  margin-bottom: 12px;
+}
+.scan-btn:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(232,85,32,0.4); }
+.scan-btn-icon { font-size: 28px; }
+
+.manual-btn {
+  width: 100%;
+  background: transparent;
+  color: var(--ll-brown);
+  padding: 12px;
+  border: 2px dashed var(--ll-brown);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#scanner-area { display: none; margin-bottom: 14px; }
+#scanner-area.active { display: block; }
+#reader { width: 100%; border-radius: 14px; overflow: hidden; background: black; }
+.scanner-stop {
+  width: 100%;
+  background: var(--ll-red);
+  color: white;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  margin-top: 10px;
+}
+
+/* === POTVRZENÍ POHYBU === */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(59,26,13,0.7);
+  z-index: 200;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+}
+.confirm-overlay.active { display: flex; }
+.confirm-sheet {
+  background: white;
+  width: 100%;
+  max-width: 720px;
+  border-radius: 20px 20px 0 0;
+  padding: 20px 20px 28px;
+  animation: slideUp 0.2s ease-out;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.confirm-id { font-family: 'Courier New', monospace; font-size: 13px; color: var(--ll-gray); margin-bottom: 4px; }
+.confirm-nazev { font-size: 18px; font-weight: 700; color: var(--ll-brown); margin-bottom: 4px; line-height: 1.3; }
+.confirm-meta { font-size: 13px; color: var(--ll-gray); margin-bottom: 16px; display: flex; gap: 12px; flex-wrap: wrap; }
+.confirm-meta-chip { background: var(--ll-cream); padding: 3px 10px; border-radius: 10px; font-weight: 600; }
+.stav-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--ll-cream);
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+.stav-label { font-size: 12px; color: var(--ll-gray); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.stav-num { font-size: 24px; font-weight: 800; color: var(--ll-brown); }
+.stav-arrow { font-size: 18px; color: var(--ll-orange); font-weight: 700; }
+
+.qty-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.qty-btn {
+  width: 50px; height: 50px;
+  border-radius: 12px;
+  background: var(--ll-cream);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ll-brown);
+}
+.qty-input {
+  flex: 1;
+  padding: 14px;
+  border: 2px solid var(--ll-cream-dark);
+  border-radius: 12px;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--ll-brown);
+  background: white;
+}
+.qty-input:focus { outline: none; border-color: var(--ll-orange); }
+
+.note-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 2px solid var(--ll-cream-dark);
+  border-radius: 10px;
+  font-size: 14px;
+  margin-bottom: 14px;
+  background: white;
+}
+.note-input:focus { outline: none; border-color: var(--ll-orange); }
+
+.confirm-actions { display: flex; gap: 10px; }
+.confirm-cancel {
+  flex: 1;
+  padding: 14px;
+  background: var(--ll-cream);
+  color: var(--ll-brown);
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+}
+.confirm-ok {
+  flex: 2;
+  padding: 14px;
+  background: var(--ll-orange);
+  color: white;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* === STAV / SEZNAM === */
+.search-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.search-input {
+  flex: 1;
+  padding: 12px 14px;
+  border: 2px solid var(--ll-cream-dark);
+  border-radius: 10px;
+  font-size: 15px;
+  background: white;
+}
+.search-input:focus { outline: none; border-color: var(--ll-orange); }
+.filter-select {
+  padding: 12px;
+  border: 2px solid var(--ll-cream-dark);
+  border-radius: 10px;
+  background: white;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.etiketa-row {
+  background: white;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-shadow: 0 1px 2px rgba(59,26,13,0.06);
+}
+.etiketa-row.low { border-left: 4px solid var(--ll-red); }
+.etiketa-row.zero { border-left: 4px solid var(--ll-orange); background: #FFF6F0; }
+.etiketa-info { flex: 1; min-width: 0; }
+.etiketa-id { font-family: 'Courier New', monospace; font-size: 11px; color: var(--ll-gray); font-weight: 600; }
+.etiketa-nazev { font-size: 14px; font-weight: 600; color: var(--ll-brown); line-height: 1.3; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.etiketa-meta { font-size: 11px; color: var(--ll-gray); margin-top: 3px; display: flex; gap: 6px; }
+.etiketa-meta-chip { background: var(--ll-cream); padding: 1px 7px; border-radius: 8px; font-weight: 600; }
+.etiketa-stav { text-align: right; min-width: 70px; }
+.etiketa-stav-num { font-size: 22px; font-weight: 800; color: var(--ll-brown); line-height: 1; }
+.etiketa-stav-min { font-size: 10px; color: var(--ll-gray); margin-top: 2px; }
+
+.summary-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.summary-card {
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+  text-align: center;
+}
+.summary-num { font-size: 22px; font-weight: 800; color: var(--ll-brown); }
+.summary-label { font-size: 10px; color: var(--ll-gray); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-top: 2px; }
+.summary-card.warning .summary-num { color: var(--ll-red); }
+.summary-card.warning-orange .summary-num { color: var(--ll-orange); }
+
+/* === HISTORIE === */
+.pohyb-row {
+  background: white;
+  border-radius: 10px;
+  padding: 11px 14px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pohyb-typ {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 800;
+  color: white;
+  flex-shrink: 0;
+}
+.pohyb-typ.plus { background: var(--ll-green); }
+.pohyb-typ.minus { background: var(--ll-orange); }
+.pohyb-typ.eq { background: var(--ll-brown); }
+.pohyb-main { flex: 1; min-width: 0; }
+.pohyb-nazev { font-size: 13px; font-weight: 600; color: var(--ll-brown); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pohyb-meta { font-size: 11px; color: var(--ll-gray); margin-top: 2px; }
+.pohyb-mnozstvi { text-align: right; font-weight: 700; color: var(--ll-brown); font-size: 14px; }
+.pohyb-stav-po { font-size: 11px; color: var(--ll-gray); font-weight: 500; }
+
+/* === QR ARCHY === */
+.qr-controls { background: white; padding: 14px; border-radius: 12px; margin-bottom: 14px; }
+.qr-checkbox-list { max-height: 360px; overflow-y: auto; background: white; border-radius: 12px; padding: 8px; }
+.qr-check-row { display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid var(--ll-cream); }
+.qr-check-row:last-child { border-bottom: none; }
+.qr-check-row input { width: 20px; height: 20px; accent-color: var(--ll-orange); }
+.qr-check-row label { font-size: 13px; flex: 1; cursor: pointer; }
+.qr-check-row label small { display: block; color: var(--ll-gray); font-size: 11px; }
+
+.qr-print-btn {
+  width: 100%;
+  background: var(--ll-orange);
+  color: white;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 12px;
+}
+
+/* === NASTAVENI === */
+.input-group { margin-bottom: 14px; }
+.input-label { display: block; font-size: 12px; font-weight: 700; color: var(--ll-gray); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.input-text {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid var(--ll-cream-dark);
+  border-radius: 10px;
+  font-size: 14px;
+  background: white;
+}
+.input-text:focus { outline: none; border-color: var(--ll-orange); }
+.save-btn {
+  width: 100%;
+  background: var(--ll-brown);
+  color: var(--ll-cream);
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.sync-btn {
+  width: 100%;
+  background: var(--ll-olive);
+  color: white;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  margin-top: 10px;
+}
+
+/* === TOAST === */
+.toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ll-brown);
+  color: var(--ll-cream);
+  padding: 12px 22px;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 14px;
+  z-index: 300;
+  opacity: 0;
+  transition: opacity 0.2s;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  max-width: 90vw;
+  text-align: center;
+}
+.toast.show { opacity: 1; }
+.toast.success { background: var(--ll-green); color: white; }
+.toast.error { background: var(--ll-red); color: white; }
+
+/* === EMPTY === */
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ll-gray);
+}
+.empty-icon { font-size: 48px; opacity: 0.4; margin-bottom: 12px; }
+
+/* === TAB CONTENT === */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* === PRINT === */
+@media print {
+  body { background: white; }
+  .header, .tabs, .qr-controls, .qr-checkbox-list, .qr-print-btn { display: none !important; }
+  .main { padding: 0; }
+  .qr-print-area { display: block !important; }
+}
+.qr-print-area { display: none; }
+.qr-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4mm;
+  padding: 8mm;
+}
+.qr-cell {
+  border: 1px dashed #ccc;
+  padding: 4mm;
+  text-align: center;
+  page-break-inside: avoid;
+}
+.qr-cell canvas, .qr-cell img { max-width: 100%; height: auto; }
+.qr-cell-label { font-size: 9pt; margin-top: 2mm; font-weight: 700; }
+.qr-cell-sub { font-size: 7pt; color: #666; line-height: 1.2; margin-top: 1mm; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="login-screen">
+  <div class="login-logo">🏷️</div>
+  <div class="login-title">LL Etikety</div>
+  <div class="login-sub">Inventura a skladová evidence</div>
+  <div id="login-user-list" class="user-list"></div>
+  <button class="manual-btn" onclick="goToSettings()">⚙️ Nastavení (první spuštění)</button>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" class="app" style="display:none">
+
+  <div class="header">
+    <div class="header-title">
+      LL Etikety
+      <small id="header-sub">Vestec sklad</small>
+    </div>
+    <div class="header-right">
+      <span class="online-dot" id="online-dot"></span>
+      <span class="queue-badge" id="queue-badge" style="display:none">0</span>
+      <span class="user-chip" id="user-chip" onclick="logout()">—</span>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- TAB: SKENOVAT -->
+    <div class="tab-content active" data-tab="scan">
+      <div class="card">
+        <div class="card-title">Typ pohybu</div>
+        <div class="action-row">
+          <button class="action-btn active" data-act="+" onclick="setAction('+')">
+            <span class="action-symbol">+</span>
+            <span>Naskladnit</span>
+          </button>
+          <button class="action-btn" data-act="-" onclick="setAction('-')">
+            <span class="action-symbol">−</span>
+            <span>Vyskladnit</span>
+          </button>
+          <button class="action-btn" data-act="=" onclick="setAction('=')">
+            <span class="action-symbol">=</span>
+            <span>Inventura</span>
+          </button>
+        </div>
+
+        <button class="scan-btn" onclick="startScanner()">
+          <span class="scan-btn-icon">📷</span>
+          <span>Spustit skener</span>
+        </button>
+
+        <div id="scanner-area">
+          <div id="reader"></div>
+          <button class="scanner-stop" onclick="stopScanner()">✕ Zavřít skener</button>
+        </div>
+
+        <button class="manual-btn" onclick="openManualSelect()">✍️ Ruční výběr etikety</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Posledních 5 pohybů</div>
+        <div id="recent-pohyby"></div>
+      </div>
+    </div>
+
+    <!-- TAB: STAV -->
+    <div class="tab-content" data-tab="stav">
+      <div class="summary-row">
+        <div class="summary-card">
+          <div class="summary-num" id="sum-celkem">0</div>
+          <div class="summary-label">Položek</div>
+        </div>
+        <div class="summary-card warning-orange">
+          <div class="summary-num" id="sum-prazdne">0</div>
+          <div class="summary-label">Nula ks</div>
+        </div>
+        <div class="summary-card warning">
+          <div class="summary-num" id="sum-malo">0</div>
+          <div class="summary-label">Pod min.</div>
+        </div>
+      </div>
+      <div class="search-row">
+        <input type="text" id="stav-search" class="search-input" placeholder="🔍 Hledat název nebo kód…" oninput="renderStav()">
+        <select id="stav-filter" class="filter-select" onchange="renderStav()">
+          <option value="">Vše</option>
+        </select>
+      </div>
+      <div id="stav-list"></div>
+    </div>
+
+    <!-- TAB: HISTORIE -->
+    <div class="tab-content" data-tab="historie">
+      <div class="search-row">
+        <input type="text" id="hist-search" class="search-input" placeholder="🔍 Hledat v historii…" oninput="renderHistorie()">
+        <select id="hist-filter" class="filter-select" onchange="renderHistorie()">
+          <option value="">Vše</option>
+          <option value="+">+ Naskladnění</option>
+          <option value="-">− Vyskladnění</option>
+          <option value="=">= Inventura</option>
+        </select>
+      </div>
+      <div id="hist-list"></div>
+    </div>
+
+    <!-- TAB: QR ARCHY -->
+    <div class="tab-content" data-tab="qr">
+      <div class="card">
+        <div class="card-title">Generování QR nálepek</div>
+        <p style="font-size:13px;color:var(--ll-gray);margin-bottom:12px;line-height:1.5">
+          Vyber etikety, pro které potřebuješ vygenerovat QR nálepky. Vytiskni na samolepící A4 archy
+          (např. Avery 3×8) a nalep na police nebo krabičky.
+        </p>
+        <div class="search-row">
+          <input type="text" id="qr-search" class="search-input" placeholder="🔍 Filtr…" oninput="renderQrList()">
+          <button class="filter-select" onclick="qrSelectAll()" style="cursor:pointer;font-weight:700">Vše</button>
+          <button class="filter-select" onclick="qrSelectNone()" style="cursor:pointer;font-weight:700">Nic</button>
+        </div>
+        <div id="qr-list" class="qr-checkbox-list"></div>
+        <button class="qr-print-btn" onclick="generateQrSheet()">🖨️ Vytisknout vybrané (<span id="qr-count">0</span>)</button>
+      </div>
+    </div>
+
+    <!-- TAB: NASTAVENI -->
+    <div class="tab-content" data-tab="nast">
+      <div class="card">
+        <div class="card-title">Připojení k Google Sheets</div>
+        <div class="input-group">
+          <label class="input-label">Apps Script URL</label>
+          <input type="text" id="ns-url" class="input-text" placeholder="https://script.google.com/macros/s/.../exec">
+        </div>
+        <button class="save-btn" onclick="saveSettings()">Uložit nastavení</button>
+        <button class="sync-btn" onclick="syncNow()">🔄 Synchronizovat hned</button>
+        <div id="sync-info" style="font-size:12px;color:var(--ll-gray);text-align:center;margin-top:10px"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Statistika</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
+          <div>Etiket v cache: <strong id="info-etiket">0</strong></div>
+          <div>Pohybů: <strong id="info-pohybu">0</strong></div>
+          <div>Ve frontě: <strong id="info-fronta">0</strong></div>
+          <div>Verze: <strong>1.0</strong></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Nebezpečná zóna</div>
+        <button class="save-btn" style="background:var(--ll-red)" onclick="resetAll()">⚠️ Smazat lokální data</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="scan" onclick="switchTab('scan')">
+      <span class="tab-icon">📷</span><span>Skenovat</span>
+    </button>
+    <button class="tab" data-tab="stav" onclick="switchTab('stav')">
+      <span class="tab-icon">📋</span><span>Stav</span>
+    </button>
+    <button class="tab" data-tab="historie" onclick="switchTab('historie')">
+      <span class="tab-icon">🕐</span><span>Historie</span>
+    </button>
+    <button class="tab" data-tab="qr" onclick="switchTab('qr')">
+      <span class="tab-icon">🏷️</span><span>QR archy</span>
+    </button>
+    <button class="tab" data-tab="nast" onclick="switchTab('nast')">
+      <span class="tab-icon">⚙️</span><span>Nastavení</span>
+    </button>
+  </div>
+</div>
+
+<!-- CONFIRM OVERLAY -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-sheet">
+    <div class="confirm-id" id="conf-id">—</div>
+    <div class="confirm-nazev" id="conf-nazev">—</div>
+    <div class="confirm-meta" id="conf-meta"></div>
+
+    <div class="stav-display">
+      <div>
+        <div class="stav-label">Stav teď</div>
+        <div class="stav-num" id="conf-stav-pred">0</div>
+      </div>
+      <div class="stav-arrow" id="conf-arrow">→</div>
+      <div style="text-align:right">
+        <div class="stav-label">Po pohybu</div>
+        <div class="stav-num" id="conf-stav-po">0</div>
+      </div>
+    </div>
+
+    <div class="qty-row">
+      <button class="qty-btn" onclick="adjQty(-1)">−</button>
+      <input type="number" class="qty-input" id="conf-qty" value="1" min="0" oninput="updateStavPo()">
+      <button class="qty-btn" onclick="adjQty(1)">+</button>
+    </div>
+
+    <input type="text" class="note-input" id="conf-note" placeholder="Poznámka (volitelná)…">
+
+    <div class="confirm-actions">
+      <button class="confirm-cancel" onclick="closeConfirm()">Zrušit</button>
+      <button class="confirm-ok" id="conf-ok-btn" onclick="confirmPohyb()">Potvrdit</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- QR PRINT AREA -->
+<div class="qr-print-area" id="qr-print-area"></div>
+
+<script>
+/**
+ * LL Etikety - inventura
+ * v1.0 - 17.6.2026
+ * ES5 only - var, function, no arrow, no template literals
+ */
+
+// === STATE ===
+var STATE = {
+  user: null,
+  uzivatele: [],
+  etikety: [],
+  pohyby: [],
+  fronta: [],
+  url: '',
+  action: '+',
+  currentEt: null,
+  online: navigator.onLine,
+  syncing: false
+};
+
+var LS = {
+  USER: 'll_et_user',
+  URL: 'll_et_url',
+  ETIKETY: 'll_et_etikety',
+  POHYBY: 'll_et_pohyby',
+  UZIVATELE: 'll_et_uzivatele',
+  FRONTA: 'll_et_fronta',
+  LAST_SYNC: 'll_et_last_sync'
+};
+
+// === INIT ===
+function init() {
+  STATE.url = localStorage.getItem(LS.URL) || '';
+  STATE.user = JSON.parse(localStorage.getItem(LS.USER) || 'null');
+  STATE.etikety = JSON.parse(localStorage.getItem(LS.ETIKETY) || '[]');
+  STATE.pohyby = JSON.parse(localStorage.getItem(LS.POHYBY) || '[]');
+  STATE.uzivatele = JSON.parse(localStorage.getItem(LS.UZIVATELE) || '[]');
+  STATE.fronta = JSON.parse(localStorage.getItem(LS.FRONTA) || '[]');
+
+  window.addEventListener('online', function () { setOnline(true); processFronta(); });
+  window.addEventListener('offline', function () { setOnline(false); });
+  setOnline(navigator.onLine);
+
+  renderLoginUsers();
+
+  if (STATE.user) {
+    showApp();
+  } else {
+    showLogin();
+  }
+
+  // Async sync on start
+  if (STATE.url && STATE.user) {
+    setTimeout(syncNow, 500);
+  }
+
+  // Periodic queue process
+  setInterval(function () {
+    if (STATE.online && STATE.fronta.length > 0 && !STATE.syncing) {
+      processFronta();
+    }
+  }, 15000);
+}
+
+function setOnline(v) {
+  STATE.online = v;
+  var dot = document.getElementById('online-dot');
+  if (dot) dot.className = 'online-dot' + (v ? '' : ' off');
+}
+
+// === LOGIN ===
+function renderLoginUsers() {
+  var list = document.getElementById('login-user-list');
+  list.innerHTML = '';
+
+  if (STATE.uzivatele.length === 0) {
+    // Default lokální uživatel
+    list.innerHTML = '<div style="text-align:center;color:var(--ll-gray);font-size:13px;padding:10px">' +
+      'Žádní uživatelé. Klikni na "Nastavení" a vlož Apps Script URL.<br>Nebo pokračuj jako:</div>';
+    var btn = document.createElement('button');
+    btn.className = 'user-btn';
+    btn.innerHTML = '<span>Skladník Vestec</span><span class="user-btn-role">offline</span>';
+    btn.onclick = function () { doLogin({ jmeno: 'Skladník Vestec', role: 'skladnik' }); };
+    list.appendChild(btn);
+    return;
+  }
+
+  for (var i = 0; i < STATE.uzivatele.length; i++) {
+    var u = STATE.uzivatele[i];
+    var btn = document.createElement('button');
+    btn.className = 'user-btn';
+    btn.innerHTML = '<span>' + esc(u.jmeno) + '</span><span class="user-btn-role">' + esc(u.role || 'skladnik') + '</span>';
+    btn.onclick = (function (user) { return function () { tryLogin(user); }; })(u);
+    list.appendChild(btn);
+  }
+}
+
+function tryLogin(user) {
+  if (user.pin) {
+    var pin = prompt('PIN pro ' + user.jmeno + ':');
+    if (pin !== user.pin) {
+      toast('Nesprávný PIN', 'error');
+      return;
+    }
+  }
+  doLogin(user);
+}
+
+function doLogin(user) {
+  STATE.user = { jmeno: user.jmeno, role: user.role || 'skladnik' };
+  localStorage.setItem(LS.USER, JSON.stringify(STATE.user));
+  showApp();
+}
+
+function logout() {
+  if (!confirm('Odhlásit ' + STATE.user.jmeno + '?')) return;
+  STATE.user = null;
+  localStorage.removeItem(LS.USER);
+  showLogin();
+}
+
+function showLogin() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  renderLoginUsers();
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('user-chip').textContent = STATE.user.jmeno;
+  renderAll();
+  document.getElementById('ns-url').value = STATE.url;
+}
+
+function goToSettings() {
+  // Login -> nastavení bez přihlášení
+  STATE.user = { jmeno: 'Setup', role: 'admin' };
+  showApp();
+  switchTab('nast');
+  document.getElementById('user-chip').textContent = 'Setup';
+}
+
+// === TABS ===
+function switchTab(name) {
+  var tabs = document.querySelectorAll('.tab');
+  for (var i = 0; i < tabs.length; i++) {
+    tabs[i].classList.toggle('active', tabs[i].getAttribute('data-tab') === name);
+  }
+  var contents = document.querySelectorAll('.tab-content');
+  for (var j = 0; j < contents.length; j++) {
+    contents[j].classList.toggle('active', contents[j].getAttribute('data-tab') === name);
+  }
+  if (name === 'stav') renderStav();
+  if (name === 'historie') renderHistorie();
+  if (name === 'qr') renderQrList();
+  if (name === 'nast') renderInfo();
+}
+
+// === RENDER ALL ===
+function renderAll() {
+  renderRecentPohyby();
+  renderStav();
+  renderHistorie();
+  populateFilters();
+  updateQueueBadge();
+}
+
+function populateFilters() {
+  var sel = document.getElementById('stav-filter');
+  if (!sel) return;
+  var cats = {};
+  for (var i = 0; i < STATE.etikety.length; i++) {
+    if (STATE.etikety[i].kategorie) cats[STATE.etikety[i].kategorie] = 1;
+  }
+  var curr = sel.value;
+  sel.innerHTML = '<option value="">Vše (' + STATE.etikety.length + ')</option>';
+  for (var c in cats) {
+    var o = document.createElement('option');
+    o.value = c;
+    o.textContent = c;
+    sel.appendChild(o);
+  }
+  sel.value = curr;
+}
+
+// === ACTION SELECTOR ===
+function setAction(act) {
+  STATE.action = act;
+  var btns = document.querySelectorAll('.action-btn');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].classList.toggle('active', btns[i].getAttribute('data-act') === act);
+  }
+}
+
+// === SCANNER ===
+var scanner = null;
+
+function startScanner() {
+  if (typeof Html5Qrcode === 'undefined') {
+    toast('Skener se nenačetl - zkontroluj internet', 'error');
+    return;
+  }
+  var area = document.getElementById('scanner-area');
+  area.classList.add('active');
+
+  if (!scanner) scanner = new Html5Qrcode('reader');
+
+  scanner.start(
+    { facingMode: 'environment' },
+    {
+      fps: 10,
+      qrbox: function (w, h) {
+        var min = Math.min(w, h);
+        return { width: Math.floor(min * 0.75), height: Math.floor(min * 0.5) };
+      },
+      aspectRatio: 1.0
+    },
+    function (decodedText) {
+      onScan(decodedText);
+    },
+    function () { /* ignore frame errors */ }
+  ).catch(function (err) {
+    toast('Kamera nelze spustit: ' + err, 'error');
+    area.classList.remove('active');
+  });
+}
+
+function stopScanner() {
+  if (scanner) {
+    scanner.stop().catch(function () {});
+  }
+  document.getElementById('scanner-area').classList.remove('active');
+}
+
+function onScan(code) {
+  // Vibrace
+  if (navigator.vibrate) navigator.vibrate(50);
+  stopScanner();
+  openConfirmFor(code);
+}
+
+// === MANUAL SELECT ===
+function openManualSelect() {
+  if (STATE.etikety.length === 0) {
+    toast('Nejdřív synchronizuj data ze Sheets', 'error');
+    return;
+  }
+  var q = prompt('Zadej kód, EAN nebo část názvu:');
+  if (!q) return;
+  q = q.trim().toLowerCase();
+
+  // Hledej přesnou shodu
+  var found = null;
+  for (var i = 0; i < STATE.etikety.length; i++) {
+    var e = STATE.etikety[i];
+    if (String(e.id).toLowerCase() === q || String(e.ean).toLowerCase() === q ||
+        String(e.kod_produktu).toLowerCase() === q) {
+      found = e;
+      break;
+    }
+  }
+  if (found) {
+    openConfirmFor(found.id);
+    return;
+  }
+  // Hledej částečnou
+  var matches = [];
+  for (var j = 0; j < STATE.etikety.length; j++) {
+    var e2 = STATE.etikety[j];
+    if (String(e2.nazev).toLowerCase().indexOf(q) > -1 ||
+        String(e2.id).toLowerCase().indexOf(q) > -1) {
+      matches.push(e2);
+    }
+  }
+  if (matches.length === 0) {
+    toast('Nic nenalezeno', 'error');
+    return;
+  }
+  if (matches.length === 1) {
+    openConfirmFor(matches[0].id);
+    return;
+  }
+  // Vyber z více možností
+  var opts = 'Nalezeno ' + matches.length + ' etiket:\n\n';
+  for (var k = 0; k < Math.min(matches.length, 10); k++) {
+    opts += (k + 1) + ') ' + matches[k].id + ' - ' + matches[k].nazev.substring(0, 50) + '\n';
+  }
+  opts += '\nZadej číslo (1-' + Math.min(matches.length, 10) + '):';
+  var sel = prompt(opts);
+  if (!sel) return;
+  var idx = parseInt(sel, 10) - 1;
+  if (isNaN(idx) || idx < 0 || idx >= matches.length) {
+    toast('Neplatná volba', 'error');
+    return;
+  }
+  openConfirmFor(matches[idx].id);
+}
+
+// === CONFIRM OVERLAY ===
+function openConfirmFor(code) {
+  var et = findEtiketa(code);
+  if (!et) {
+    toast('Etiketa "' + code + '" nenalezena', 'error');
+    return;
+  }
+  STATE.currentEt = et;
+
+  document.getElementById('conf-id').textContent = et.id + (et.ean ? ' · EAN: ' + et.ean : '');
+  document.getElementById('conf-nazev').textContent = et.nazev;
+
+  var meta = '';
+  if (et.kategorie) meta += '<span class="confirm-meta-chip">' + esc(et.kategorie) + '</span>';
+  if (et.typ) meta += '<span class="confirm-meta-chip">' + esc(et.typ) + '</span>';
+  if (et.vaha_g) meta += '<span class="confirm-meta-chip">' + esc(et.vaha_g) + '</span>';
+  if (et.vyrobce) meta += '<span class="confirm-meta-chip">' + esc(et.vyrobce) + '</span>';
+  document.getElementById('conf-meta').innerHTML = meta;
+
+  document.getElementById('conf-stav-pred').textContent = et.stav;
+  document.getElementById('conf-qty').value = STATE.action === '=' ? et.stav : 1;
+  document.getElementById('conf-note').value = '';
+
+  var okBtn = document.getElementById('conf-ok-btn');
+  if (STATE.action === '+') {
+    okBtn.textContent = 'Naskladnit (+)';
+    okBtn.style.background = 'var(--ll-green)';
+  } else if (STATE.action === '-') {
+    okBtn.textContent = 'Vyskladnit (−)';
+    okBtn.style.background = 'var(--ll-orange)';
+  } else {
+    okBtn.textContent = 'Nastavit stav (=)';
+    okBtn.style.background = 'var(--ll-brown)';
+  }
+
+  updateStavPo();
+  document.getElementById('confirm-overlay').classList.add('active');
+  setTimeout(function () { document.getElementById('conf-qty').focus(); }, 100);
+}
+
+function closeConfirm() {
+  document.getElementById('confirm-overlay').classList.remove('active');
+  STATE.currentEt = null;
+}
+
+function adjQty(d) {
+  var inp = document.getElementById('conf-qty');
+  var v = parseInt(inp.value, 10) || 0;
+  v = Math.max(0, v + d);
+  inp.value = v;
+  updateStavPo();
+}
+
+function updateStavPo() {
+  if (!STATE.currentEt) return;
+  var q = parseInt(document.getElementById('conf-qty').value, 10) || 0;
+  var po;
+  if (STATE.action === '+') po = STATE.currentEt.stav + q;
+  else if (STATE.action === '-') po = STATE.currentEt.stav - q;
+  else po = q;
+  document.getElementById('conf-stav-po').textContent = po;
+  document.getElementById('conf-stav-po').style.color = po < 0 ? 'var(--ll-red)' : 'var(--ll-brown)';
+}
+
+function confirmPohyb() {
+  if (!STATE.currentEt) return;
+  var q = parseInt(document.getElementById('conf-qty').value, 10) || 0;
+  if (STATE.action !== '=' && q <= 0) {
+    toast('Zadej množství větší než 0', 'error');
+    return;
+  }
+  var note = document.getElementById('conf-note').value.trim();
+  var pohyb = {
+    action: 'pohyb',
+    id: STATE.currentEt.id,
+    typ_pohybu: STATE.action,
+    mnozstvi: q,
+    uzivatel: STATE.user.jmeno,
+    poznamka: note,
+    timestamp: new Date().toISOString()
+  };
+
+  // Optimisticky aktualizuj lokální stav
+  var et = STATE.currentEt;
+  var stavPred = et.stav;
+  var stavPo;
+  if (STATE.action === '+') stavPo = stavPred + q;
+  else if (STATE.action === '-') stavPo = stavPred - q;
+  else stavPo = q;
+  et.stav = stavPo;
+
+  // Přidej lokální pohyb
+  STATE.pohyby.unshift({
+    timestamp: pohyb.timestamp,
+    id: et.id,
+    nazev: et.nazev,
+    typ_pohybu: STATE.action,
+    mnozstvi: q,
+    stav_pred: stavPred,
+    stav_po: stavPo,
+    uzivatel: STATE.user.jmeno,
+    poznamka: note,
+    pending: !STATE.online
+  });
+
+  saveLocal();
+
+  // Pošli nebo přidej do fronty
+  if (STATE.online && STATE.url) {
+    sendPohyb(pohyb);
+  } else {
+    STATE.fronta.push(pohyb);
+    localStorage.setItem(LS.FRONTA, JSON.stringify(STATE.fronta));
+    toast('Uloženo do fronty (' + STATE.fronta.length + ')', 'success');
+  }
+
+  closeConfirm();
+  renderAll();
+}
+
+// === SYNC ===
+function syncNow() {
+  if (!STATE.url) {
+    toast('Nastav nejdřív Apps Script URL', 'error');
+    switchTab('nast');
+    return;
+  }
+  if (STATE.syncing) return;
+  STATE.syncing = true;
+  toast('Synchronizuji…');
+
+  // Nejdřív zpracuj frontu
+  processFronta(function () {
+    // Pak stáhni vše
+    fetchAll(function (ok) {
+      STATE.syncing = false;
+      if (ok) {
+        localStorage.setItem(LS.LAST_SYNC, new Date().toISOString());
+        toast('Hotovo', 'success');
+        renderAll();
+        renderLoginUsers();
+      }
+    });
+  });
+}
+
+function fetchAll(cb) {
+  fetch(STATE.url + '?action=getAll&t=' + Date.now())
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d.ok) { toast('Sync error: ' + d.error, 'error'); cb(false); return; }
+      STATE.etikety = d.etikety || [];
+      STATE.pohyby = d.pohyby || [];
+      STATE.uzivatele = d.uzivatele || [];
+      saveLocal();
+      cb(true);
+    })
+    .catch(function (e) {
+      toast('Chyba spojení: ' + e.message, 'error');
+      cb(false);
+    });
+}
+
+function sendPohyb(pohyb) {
+  fetch(STATE.url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(pohyb)
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d.ok) {
+        toast('OK · ' + d.nazev.substring(0, 30) + ' → ' + d.stav_po, 'success');
+        // Označ poslední pohyb jako synced
+        for (var i = 0; i < STATE.pohyby.length; i++) {
+          if (STATE.pohyby[i].timestamp === pohyb.timestamp && STATE.pohyby[i].pending) {
+            STATE.pohyby[i].pending = false;
+            break;
+          }
+        }
+        saveLocal();
+        renderAll();
+      } else {
+        toast('Server: ' + d.error, 'error');
+        // Přidej do fronty
+        STATE.fronta.push(pohyb);
+        localStorage.setItem(LS.FRONTA, JSON.stringify(STATE.fronta));
+        updateQueueBadge();
+      }
+    })
+    .catch(function (e) {
+      // Při chybě přidej do fronty
+      STATE.fronta.push(pohyb);
+      localStorage.setItem(LS.FRONTA, JSON.stringify(STATE.fronta));
+      toast('Offline - uloženo do fronty', 'error');
+      updateQueueBadge();
+    });
+}
+
+function processFronta(cb) {
+  if (STATE.fronta.length === 0) { if (cb) cb(); return; }
+  if (!STATE.online || !STATE.url) { if (cb) cb(); return; }
+
+  var batch = {
+    action: 'pohyby_batch',
+    pohyby: STATE.fronta.slice()
+  };
+
+  fetch(STATE.url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(batch)
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d.ok) {
+        toast('Odesláno ' + STATE.fronta.length + ' pohybů z fronty', 'success');
+        STATE.fronta = [];
+        localStorage.setItem(LS.FRONTA, '[]');
+        updateQueueBadge();
+        if (cb) cb();
+      } else {
+        if (cb) cb();
+      }
+    })
+    .catch(function () { if (cb) cb(); });
+}
+
+function saveLocal() {
+  localStorage.setItem(LS.ETIKETY, JSON.stringify(STATE.etikety));
+  localStorage.setItem(LS.POHYBY, JSON.stringify(STATE.pohyby.slice(0, 500)));
+  localStorage.setItem(LS.UZIVATELE, JSON.stringify(STATE.uzivatele));
+}
+
+function updateQueueBadge() {
+  var b = document.getElementById('queue-badge');
+  if (!b) return;
+  if (STATE.fronta.length > 0) {
+    b.textContent = STATE.fronta.length;
+    b.style.display = 'inline-block';
+  } else {
+    b.style.display = 'none';
+  }
+}
+
+// === RENDER STAV ===
+function renderStav() {
+  var list = document.getElementById('stav-list');
+  if (!list) return;
+  var q = (document.getElementById('stav-search').value || '').toLowerCase().trim();
+  var cat = document.getElementById('stav-filter').value;
+
+  var celkem = 0, prazdne = 0, malo = 0;
+  var rows = [];
+  for (var i = 0; i < STATE.etikety.length; i++) {
+    var e = STATE.etikety[i];
+    celkem++;
+    if (e.stav <= 0) prazdne++;
+    else if (e.minimum > 0 && e.stav < e.minimum) malo++;
+
+    if (cat && e.kategorie !== cat) continue;
+    if (q && String(e.nazev).toLowerCase().indexOf(q) === -1 &&
+        String(e.id).toLowerCase().indexOf(q) === -1 &&
+        String(e.kod_produktu).toLowerCase().indexOf(q) === -1) continue;
+
+    rows.push(e);
+  }
+
+  document.getElementById('sum-celkem').textContent = celkem;
+  document.getElementById('sum-prazdne').textContent = prazdne;
+  document.getElementById('sum-malo').textContent = malo;
+
+  if (rows.length === 0) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>' +
+      (STATE.etikety.length === 0 ? 'Žádné etikety. Synchronizuj ze Sheets.' : 'Nic nenalezeno') +
+      '</div>';
+    return;
+  }
+
+  // Seřaď: prázdné a pod minimem nahoru
+  rows.sort(function (a, b) {
+    var sa = a.stav <= 0 ? 0 : (a.minimum > 0 && a.stav < a.minimum ? 1 : 2);
+    var sb = b.stav <= 0 ? 0 : (b.minimum > 0 && b.stav < b.minimum ? 1 : 2);
+    if (sa !== sb) return sa - sb;
+    return String(a.id).localeCompare(String(b.id));
+  });
+
+  var html = '';
+  for (var k = 0; k < rows.length; k++) {
+    var e2 = rows[k];
+    var cls = 'etiketa-row';
+    if (e2.stav <= 0) cls += ' zero';
+    else if (e2.minimum > 0 && e2.stav < e2.minimum) cls += ' low';
+    html += '<div class="' + cls + '" onclick="openConfirmFor(\'' + e2.id + '\')">' +
+      '<div class="etiketa-info">' +
+        '<div class="etiketa-id">' + esc(e2.id) + (e2.ean ? ' · ' + esc(e2.ean) : '') + '</div>' +
+        '<div class="etiketa-nazev">' + esc(e2.nazev) + '</div>' +
+        '<div class="etiketa-meta">' +
+          (e2.kategorie ? '<span class="etiketa-meta-chip">' + esc(e2.kategorie) + '</span>' : '') +
+          (e2.typ ? '<span class="etiketa-meta-chip">' + esc(e2.typ) + '</span>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="etiketa-stav">' +
+        '<div class="etiketa-stav-num">' + e2.stav + '</div>' +
+        (e2.minimum > 0 ? '<div class="etiketa-stav-min">min ' + e2.minimum + '</div>' : '') +
+      '</div>' +
+    '</div>';
+  }
+  list.innerHTML = html;
+}
+
+// === RENDER HISTORIE ===
+function renderHistorie() {
+  var list = document.getElementById('hist-list');
+  if (!list) return;
+  var q = (document.getElementById('hist-search').value || '').toLowerCase().trim();
+  var typ = document.getElementById('hist-filter').value;
+
+  var rows = [];
+  for (var i = 0; i < STATE.pohyby.length; i++) {
+    var p = STATE.pohyby[i];
+    if (typ && p.typ_pohybu !== typ) continue;
+    if (q && String(p.nazev).toLowerCase().indexOf(q) === -1 &&
+        String(p.id).toLowerCase().indexOf(q) === -1 &&
+        String(p.uzivatel).toLowerCase().indexOf(q) === -1) continue;
+    rows.push(p);
+  }
+
+  if (rows.length === 0) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">🕐</div>Zatím žádné pohyby</div>';
+    return;
+  }
+
+  var html = '';
+  for (var k = 0; k < rows.length; k++) {
+    var p2 = rows[k];
+    var cls = p2.typ_pohybu === '+' ? 'plus' : (p2.typ_pohybu === '-' ? 'minus' : 'eq');
+    var symbol = p2.typ_pohybu === '+' ? '+' : (p2.typ_pohybu === '-' ? '−' : '=');
+    var dt = new Date(p2.timestamp);
+    var dtStr = dt.toLocaleDateString('cs-CZ', { day: '2-digit', month: '2-digit' }) + ' ' +
+                dt.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+    html += '<div class="pohyb-row">' +
+      '<div class="pohyb-typ ' + cls + '">' + symbol + '</div>' +
+      '<div class="pohyb-main">' +
+        '<div class="pohyb-nazev">' + esc(p2.nazev) +
+          (p2.pending ? ' <span style="color:var(--ll-orange);font-size:10px">⏳ fronta</span>' : '') +
+        '</div>' +
+        '<div class="pohyb-meta">' + dtStr + ' · ' + esc(p2.uzivatel) +
+          (p2.poznamka ? ' · "' + esc(p2.poznamka) + '"' : '') + '</div>' +
+      '</div>' +
+      '<div>' +
+        '<div class="pohyb-mnozstvi">' + symbol + p2.mnozstvi + '</div>' +
+        '<div class="pohyb-stav-po">→ ' + p2.stav_po + ' ks</div>' +
+      '</div>' +
+    '</div>';
+  }
+  list.innerHTML = html;
+}
+
+function renderRecentPohyby() {
+  var box = document.getElementById('recent-pohyby');
+  if (!box) return;
+  if (STATE.pohyby.length === 0) {
+    box.innerHTML = '<div style="text-align:center;color:var(--ll-gray);font-size:13px;padding:8px">' +
+      'Zatím žádné pohyby</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < Math.min(5, STATE.pohyby.length); i++) {
+    var p = STATE.pohyby[i];
+    var cls = p.typ_pohybu === '+' ? 'plus' : (p.typ_pohybu === '-' ? 'minus' : 'eq');
+    var symbol = p.typ_pohybu === '+' ? '+' : (p.typ_pohybu === '-' ? '−' : '=');
+    var dt = new Date(p.timestamp);
+    var dtStr = dt.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+    html += '<div class="pohyb-row" style="margin-bottom:4px">' +
+      '<div class="pohyb-typ ' + cls + '" style="width:26px;height:26px;font-size:14px">' + symbol + '</div>' +
+      '<div class="pohyb-main">' +
+        '<div class="pohyb-nazev" style="font-size:12px">' + esc(p.nazev) + '</div>' +
+        '<div class="pohyb-meta" style="font-size:10px">' + dtStr + ' · ' + esc(p.uzivatel) + '</div>' +
+      '</div>' +
+      '<div class="pohyb-mnozstvi" style="font-size:13px">' + symbol + p.mnozstvi + '</div>' +
+    '</div>';
+  }
+  box.innerHTML = html;
+}
+
+// === QR ARCHY ===
+var qrSelected = {};
+
+function renderQrList() {
+  var list = document.getElementById('qr-list');
+  if (!list) return;
+  var q = (document.getElementById('qr-search').value || '').toLowerCase().trim();
+  var html = '';
+  for (var i = 0; i < STATE.etikety.length; i++) {
+    var e = STATE.etikety[i];
+    if (q && String(e.nazev).toLowerCase().indexOf(q) === -1 &&
+        String(e.id).toLowerCase().indexOf(q) === -1) continue;
+    var checked = qrSelected[e.id] ? ' checked' : '';
+    html += '<div class="qr-check-row">' +
+      '<input type="checkbox" id="qr-' + esc(e.id) + '" ' + checked +
+      ' onchange="qrToggle(\'' + e.id + '\', this.checked)">' +
+      '<label for="qr-' + esc(e.id) + '">' +
+        '<strong>' + esc(e.id) + '</strong> ' + esc(e.nazev) +
+        '<small>' + esc(e.typ) + (e.kategorie ? ' · ' + esc(e.kategorie) : '') + '</small>' +
+      '</label>' +
+    '</div>';
+  }
+  list.innerHTML = html || '<div class="empty"><div class="empty-icon">🏷️</div>Žádné etikety</div>';
+  updateQrCount();
+}
+
+function qrToggle(id, v) {
+  if (v) qrSelected[id] = 1;
+  else delete qrSelected[id];
+  updateQrCount();
+}
+
+function qrSelectAll() {
+  for (var i = 0; i < STATE.etikety.length; i++) qrSelected[STATE.etikety[i].id] = 1;
+  renderQrList();
+}
+
+function qrSelectNone() {
+  qrSelected = {};
+  renderQrList();
+}
+
+function updateQrCount() {
+  var n = 0;
+  for (var k in qrSelected) n++;
+  var el = document.getElementById('qr-count');
+  if (el) el.textContent = n;
+}
+
+function generateQrSheet() {
+  var ids = [];
+  for (var k in qrSelected) ids.push(k);
+  if (ids.length === 0) { toast('Vyber alespoň jednu etiketu', 'error'); return; }
+
+  var area = document.getElementById('qr-print-area');
+  area.style.display = 'block';
+  area.innerHTML = '<div class="qr-grid" id="qr-grid"></div>';
+  var grid = document.getElementById('qr-grid');
+
+  var done = 0;
+  for (var i = 0; i < ids.length; i++) {
+    var e = findEtiketa(ids[i]);
+    if (!e) { done++; continue; }
+    var cell = document.createElement('div');
+    cell.className = 'qr-cell';
+    var canvas = document.createElement('canvas');
+    cell.appendChild(canvas);
+    var label = document.createElement('div');
+    label.className = 'qr-cell-label';
+    label.textContent = e.id;
+    cell.appendChild(label);
+    var sub = document.createElement('div');
+    sub.className = 'qr-cell-sub';
+    sub.textContent = (e.nazev.substring(0, 60) + (e.nazev.length > 60 ? '…' : '')) +
+                      (e.typ ? ' (' + e.typ + ')' : '');
+    cell.appendChild(sub);
+    grid.appendChild(cell);
+
+    (function (cv, code) {
+      QRCode.toCanvas(cv, code, { width: 160, margin: 1 }, function () {
+        done++;
+        if (done === ids.length) {
+          setTimeout(function () { window.print(); area.style.display = 'none'; }, 300);
+        }
+      });
+    })(canvas, e.id);
+  }
+}
+
+// === SETTINGS ===
+function saveSettings() {
+  var url = document.getElementById('ns-url').value.trim();
+  STATE.url = url;
+  localStorage.setItem(LS.URL, url);
+  toast('Uloženo', 'success');
+  if (url) syncNow();
+}
+
+function renderInfo() {
+  document.getElementById('info-etiket').textContent = STATE.etikety.length;
+  document.getElementById('info-pohybu').textContent = STATE.pohyby.length;
+  document.getElementById('info-fronta').textContent = STATE.fronta.length;
+  var last = localStorage.getItem(LS.LAST_SYNC);
+  if (last) {
+    var dt = new Date(last);
+    document.getElementById('sync-info').textContent = 'Poslední sync: ' +
+      dt.toLocaleDateString('cs-CZ') + ' ' + dt.toLocaleTimeString('cs-CZ');
+  }
+}
+
+function resetAll() {
+  if (!confirm('Opravdu smazat všechna lokální data? Sheets zůstanou nedotčené.')) return;
+  if (!confirm('Určitě? Fronta neodeslaných pohybů (' + STATE.fronta.length + ') bude ztracena.')) return;
+  for (var k in LS) localStorage.removeItem(LS[k]);
+  location.reload();
+}
+
+// === HELPERS ===
+function findEtiketa(code) {
+  var c = String(code).trim();
+  for (var i = 0; i < STATE.etikety.length; i++) {
+    var e = STATE.etikety[i];
+    if (e.id === c || e.ean === c || String(e.kod_produktu) === c) return e;
+  }
+  // Case insensitive
+  var cl = c.toLowerCase();
+  for (var j = 0; j < STATE.etikety.length; j++) {
+    var e2 = STATE.etikety[j];
+    if (String(e2.id).toLowerCase() === cl) return e2;
+  }
+  return null;
+}
+
+function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function toast(msg, kind) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (kind ? ' ' + kind : '');
+  setTimeout(function () { t.className = 'toast' + (kind ? ' ' + kind : ''); }, 2800);
+}
+
+// === START ===
+init();
+
+</script>
+
+</body>
+</html>
