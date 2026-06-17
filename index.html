@@ -5,12 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#3B1A0D">
-<title>LL Etikety - inventura</title>
+<title>LL Etikety - inventura v2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
 :root {
   --ll-orange: #E85520;
@@ -478,6 +479,59 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
+/* === OBRAZKY ETIKET === */
+.et-thumb {
+  width: 44px; height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--ll-cream);
+  flex-shrink: 0;
+  border: 1px solid var(--ll-cream-dark);
+}
+.et-thumb-placeholder {
+  width: 44px; height: 44px;
+  border-radius: 8px;
+  background: var(--ll-cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ll-gray);
+  font-size: 20px;
+  flex-shrink: 0;
+  border: 1px solid var(--ll-cream-dark);
+}
+.confirm-img-wrap {
+  width: 100%;
+  background: var(--ll-cream);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  max-height: 220px;
+  overflow: hidden;
+}
+.confirm-img {
+  max-width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+}
+.confirm-img-empty {
+  color: var(--ll-gray);
+  font-size: 13px;
+  padding: 30px;
+  text-align: center;
+}
+
+/* === PDF BTN === */
+.qr-pdf-progress {
+  text-align: center;
+  font-size: 13px;
+  color: var(--ll-gray);
+  margin-top: 8px;
+}
+
 /* === PRINT === */
 @media print {
   body { background: white; }
@@ -622,7 +676,8 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
           <button class="filter-select" onclick="qrSelectNone()" style="cursor:pointer;font-weight:700">Nic</button>
         </div>
         <div id="qr-list" class="qr-checkbox-list"></div>
-        <button class="qr-print-btn" onclick="generateQrSheet()">🖨️ Vytisknout vybrané (<span id="qr-count">0</span>)</button>
+        <button class="qr-print-btn" onclick="generateQrSheet()">📄 Stáhnout PDF (<span id="qr-count">0</span>)</button>
+        <div class="qr-pdf-progress" id="qr-progress"></div>
       </div>
     </div>
 
@@ -645,7 +700,7 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
           <div>Etiket v cache: <strong id="info-etiket">0</strong></div>
           <div>Pohybů: <strong id="info-pohybu">0</strong></div>
           <div>Ve frontě: <strong id="info-fronta">0</strong></div>
-          <div>Verze: <strong>1.0</strong></div>
+          <div>Verze: <strong>2.0</strong></div>
         </div>
       </div>
 
@@ -679,6 +734,9 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 <!-- CONFIRM OVERLAY -->
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-sheet">
+    <div class="confirm-img-wrap" id="conf-img-wrap">
+      <div class="confirm-img-empty">📷 Bez náhledu</div>
+    </div>
     <div class="confirm-id" id="conf-id">—</div>
     <div class="confirm-nazev" id="conf-nazev">—</div>
     <div class="confirm-meta" id="conf-meta"></div>
@@ -1028,6 +1086,15 @@ function openConfirmFor(code) {
   document.getElementById('conf-id').textContent = et.id + (et.ean ? ' · EAN: ' + et.ean : '');
   document.getElementById('conf-nazev').textContent = et.nazev;
 
+  // Obrazek
+  var imgWrap = document.getElementById('conf-img-wrap');
+  if (et.obrazek_url) {
+    imgWrap.innerHTML = '<img class="confirm-img" src="' + esc(et.obrazek_url) +
+      '" onerror="this.parentNode.innerHTML=\'<div class=&quot;confirm-img-empty&quot;>📷 Náhled se nepodařilo načíst</div>\'">';
+  } else {
+    imgWrap.innerHTML = '<div class="confirm-img-empty">📷 Bez náhledu</div>';
+  }
+
   var meta = '';
   if (et.kategorie) meta += '<span class="confirm-meta-chip">' + esc(et.kategorie) + '</span>';
   if (et.typ) meta += '<span class="confirm-meta-chip">' + esc(et.typ) + '</span>';
@@ -1309,7 +1376,11 @@ function renderStav() {
     var cls = 'etiketa-row';
     if (e2.stav <= 0) cls += ' zero';
     else if (e2.minimum > 0 && e2.stav < e2.minimum) cls += ' low';
+    var imgHtml = e2.obrazek_url
+      ? '<img class="et-thumb" src="' + esc(e2.obrazek_url) + '" loading="lazy" onerror="this.outerHTML=\'<div class=&quot;et-thumb-placeholder&quot;>🏷️</div>\'">'
+      : '<div class="et-thumb-placeholder">🏷️</div>';
     html += '<div class="' + cls + '" onclick="openConfirmFor(\'' + e2.id + '\')">' +
+      imgHtml +
       '<div class="etiketa-info">' +
         '<div class="etiketa-id">' + esc(e2.id) + (e2.ean ? ' · ' + esc(e2.ean) : '') + '</div>' +
         '<div class="etiketa-nazev">' + esc(e2.nazev) + '</div>' +
@@ -1456,39 +1527,93 @@ function generateQrSheet() {
   for (var k in qrSelected) ids.push(k);
   if (ids.length === 0) { toast('Vyber alespoň jednu etiketu', 'error'); return; }
 
-  var area = document.getElementById('qr-print-area');
-  area.style.display = 'block';
-  area.innerHTML = '<div class="qr-grid" id="qr-grid"></div>';
-  var grid = document.getElementById('qr-grid');
-
-  var done = 0;
-  for (var i = 0; i < ids.length; i++) {
-    var e = findEtiketa(ids[i]);
-    if (!e) { done++; continue; }
-    var cell = document.createElement('div');
-    cell.className = 'qr-cell';
-    var canvas = document.createElement('canvas');
-    cell.appendChild(canvas);
-    var label = document.createElement('div');
-    label.className = 'qr-cell-label';
-    label.textContent = e.id;
-    cell.appendChild(label);
-    var sub = document.createElement('div');
-    sub.className = 'qr-cell-sub';
-    sub.textContent = (e.nazev.substring(0, 60) + (e.nazev.length > 60 ? '…' : '')) +
-                      (e.typ ? ' (' + e.typ + ')' : '');
-    cell.appendChild(sub);
-    grid.appendChild(cell);
-
-    (function (cv, code) {
-      QRCode.toCanvas(cv, code, { width: 160, margin: 1 }, function () {
-        done++;
-        if (done === ids.length) {
-          setTimeout(function () { window.print(); area.style.display = 'none'; }, 300);
-        }
-      });
-    })(canvas, e.id);
+  if (typeof window.jspdf === 'undefined') {
+    toast('PDF knihovna se nenačetla - zkontroluj internet', 'error');
+    return;
   }
+
+  var progress = document.getElementById('qr-progress');
+  progress.textContent = 'Generuji ' + ids.length + ' QR kódů…';
+
+  // A4: 210x297mm, mřížka 3x8 = 24/stránku
+  var jsPDF = window.jspdf.jsPDF;
+  var doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  var COLS = 3, ROWS = 8;
+  var MARGIN = 8;
+  var GAP = 3;
+  var CELL_W = (210 - 2 * MARGIN - (COLS - 1) * GAP) / COLS;
+  var CELL_H = (297 - 2 * MARGIN - (ROWS - 1) * GAP) / ROWS;
+  var QR_SIZE = Math.min(CELL_W * 0.6, CELL_H * 0.55);
+
+  // Vygenerujeme QR jako dataURL postupně (async chain)
+  var idx = 0;
+  function next() {
+    if (idx >= ids.length) {
+      // Hotovo - stáhni PDF
+      var stamp = (new Date()).toISOString().slice(0, 16).replace(/[T:]/g, '-');
+      doc.save('LL-QR-etikety-' + stamp + '.pdf');
+      progress.textContent = '✓ PDF vygenerováno (' + ids.length + ' etiket)';
+      toast('PDF stažen', 'success');
+      setTimeout(function () { progress.textContent = ''; }, 5000);
+      return;
+    }
+
+    var e = findEtiketa(ids[idx]);
+    if (!e) { idx++; next(); return; }
+
+    var page = Math.floor(idx / (COLS * ROWS));
+    var posOnPage = idx % (COLS * ROWS);
+    var row = Math.floor(posOnPage / COLS);
+    var col = posOnPage % COLS;
+
+    if (page > 0 && posOnPage === 0) doc.addPage();
+
+    var x = MARGIN + col * (CELL_W + GAP);
+    var y = MARGIN + row * (CELL_H + GAP);
+
+    // Rámeček (light gray)
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.1);
+    doc.rect(x, y, CELL_W, CELL_H);
+
+    // QR jako dataURL
+    QRCode.toDataURL(e.id, { width: 400, margin: 1 }, function (err, dataUrl) {
+      if (!err) {
+        var qrX = x + (CELL_W - QR_SIZE) / 2;
+        var qrY = y + 2;
+        doc.addImage(dataUrl, 'PNG', qrX, qrY, QR_SIZE, QR_SIZE);
+
+        // ID (tučně, velký)
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(40, 40, 40);
+        var idText = e.id;
+        var textY = qrY + QR_SIZE + 3;
+        doc.text(idText, x + CELL_W / 2, textY, { align: 'center' });
+
+        // Název (malý, normální)
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6.5);
+        doc.setTextColor(100, 100, 100);
+        var maxChars = 28;
+        var nazev = e.nazev || '';
+        if (nazev.length > maxChars) nazev = nazev.substring(0, maxChars - 1) + '…';
+        doc.text(nazev, x + CELL_W / 2, textY + 3, { align: 'center' });
+
+        if (e.typ) {
+          doc.setFontSize(5.5);
+          doc.text('(' + e.typ + ')', x + CELL_W / 2, textY + 5.5, { align: 'center' });
+        }
+      }
+
+      idx++;
+      progress.textContent = 'Generuji ' + idx + '/' + ids.length + ' QR kódů…';
+      // Async chain - nezablokuje UI
+      setTimeout(next, 0);
+    });
+  }
+
+  next();
 }
 
 // === SETTINGS ===
