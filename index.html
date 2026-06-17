@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#3B1A0D">
-<title>LL Etikety - inventura v4</title>
+<title>LL Etikety - inventura v5</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -87,22 +87,22 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 }
 .tab {
   flex: 1;
-  padding: 10px 4px 12px;
+  padding: 9px 2px 11px;
   color: var(--ll-cream);
   opacity: 0.55;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  font-size: 10px;
+  gap: 2px;
+  font-size: 9px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   transition: opacity 0.15s;
   border-top: 3px solid transparent;
 }
 .tab.active { opacity: 1; border-top-color: var(--ll-orange); }
-.tab-icon { font-size: 22px; line-height: 1; }
+.tab-icon { font-size: 20px; line-height: 1; }
 
 /* === LOGIN === */
 .login-screen {
@@ -250,7 +250,7 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 .stav-num { font-size: 24px; font-weight: 800; color: var(--ll-brown); }
 .stav-arrow { font-size: 18px; color: var(--ll-orange); font-weight: 700; }
 
-.qty-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.qty-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
 .qty-btn {
   width: 50px; height: 50px;
   border-radius: 12px;
@@ -271,6 +271,177 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
   background: white;
 }
 .qty-input:focus { outline: none; border-color: var(--ll-orange); }
+
+.qty-quick {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.qty-quick-btn {
+  padding: 12px 4px;
+  background: var(--ll-cream);
+  color: var(--ll-brown);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  transition: all 0.1s;
+}
+.qty-quick-btn:active {
+  background: var(--ll-orange);
+  color: white;
+  transform: scale(0.95);
+}
+
+/* === DASHBOARD === */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.dash-card {
+  background: white;
+  padding: 14px;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(59,26,13,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dash-card.warning { background: linear-gradient(135deg, #FFF6F0 0%, #FFEDDC 100%); border-left: 4px solid var(--ll-orange); }
+.dash-card.danger { background: linear-gradient(135deg, #FFF0F0 0%, #FFDADA 100%); border-left: 4px solid var(--ll-red); }
+.dash-card.success { background: linear-gradient(135deg, #F0FFF4 0%, #DDF5E2 100%); border-left: 4px solid var(--ll-green); }
+.dash-card.info { background: linear-gradient(135deg, #F0E8D6 0%, #E5DBC0 100%); }
+
+.dash-num {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--ll-brown);
+  line-height: 1;
+}
+.dash-card.warning .dash-num { color: #C8590A; }
+.dash-card.danger .dash-num { color: var(--ll-red); }
+.dash-card.success .dash-num { color: #1F7A3C; }
+
+.dash-label {
+  font-size: 11px;
+  color: var(--ll-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+.dash-sub {
+  font-size: 12px;
+  color: var(--ll-brown);
+  margin-top: 4px;
+  opacity: 0.7;
+}
+
+.dash-section-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ll-brown);
+  margin: 18px 0 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dash-section-icon {
+  font-size: 18px;
+}
+
+.dash-top-row {
+  background: white;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.dash-top-row.zero { border-left: 4px solid var(--ll-orange); }
+.dash-top-row.low { border-left: 4px solid var(--ll-red); }
+.dash-top-img {
+  width: 36px; height: 36px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--ll-cream);
+  flex-shrink: 0;
+}
+.dash-top-img-ph {
+  width: 36px; height: 36px;
+  border-radius: 6px;
+  background: var(--ll-cream);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ll-gray);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.dash-top-info { flex: 1; min-width: 0; }
+.dash-top-nazev {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ll-brown);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dash-top-meta {
+  font-size: 11px;
+  color: var(--ll-gray);
+  margin-top: 1px;
+}
+.dash-top-stav {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ll-brown);
+}
+.dash-top-stav.zero { color: var(--ll-orange); }
+.dash-top-stav.low { color: var(--ll-red); }
+
+.dash-cat-row {
+  background: white;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.dash-cat-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ll-brown);
+  flex: 1;
+}
+.dash-cat-bar {
+  flex: 1.5;
+  height: 8px;
+  background: var(--ll-cream);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+.dash-cat-bar-fill {
+  height: 100%;
+  background: var(--ll-olive);
+  border-radius: 4px;
+  transition: width 0.4s;
+}
+.dash-cat-bar-fill.warning { background: var(--ll-orange); }
+.dash-cat-bar-fill.danger { background: var(--ll-red); }
+.dash-cat-stats {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ll-brown);
+  min-width: 60px;
+  text-align: right;
+}
 
 .note-input {
   width: 100%;
@@ -737,6 +908,11 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
       </div>
     </div>
 
+    <!-- TAB: PREHLED -->
+    <div class="tab-content" data-tab="prehled">
+      <div id="prehled-content"></div>
+    </div>
+
     <!-- TAB: STAV -->
     <div class="tab-content" data-tab="stav">
       <div class="summary-row">
@@ -822,7 +998,7 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
           <div>Etiket v cache: <strong id="info-etiket">0</strong></div>
           <div>Pohybů: <strong id="info-pohybu">0</strong></div>
           <div>Ve frontě: <strong id="info-fronta">0</strong></div>
-          <div>Verze: <strong>4.0</strong></div>
+          <div>Verze: <strong>5.0</strong></div>
         </div>
       </div>
 
@@ -838,6 +1014,9 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
     <button class="tab active" data-tab="scan" onclick="switchTab('scan')">
       <span class="tab-icon">📷</span><span>Skenovat</span>
     </button>
+    <button class="tab" data-tab="prehled" onclick="switchTab('prehled')">
+      <span class="tab-icon">📊</span><span>Přehled</span>
+    </button>
     <button class="tab" data-tab="stav" onclick="switchTab('stav')">
       <span class="tab-icon">📋</span><span>Stav</span>
     </button>
@@ -845,10 +1024,10 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
       <span class="tab-icon">🕐</span><span>Historie</span>
     </button>
     <button class="tab" data-tab="qr" onclick="switchTab('qr')">
-      <span class="tab-icon">🏷️</span><span>QR archy</span>
+      <span class="tab-icon">🏷️</span><span>QR</span>
     </button>
     <button class="tab" data-tab="nast" onclick="switchTab('nast')">
-      <span class="tab-icon">⚙️</span><span>Nastavení</span>
+      <span class="tab-icon">⚙️</span><span>Nast.</span>
     </button>
   </div>
 </div>
@@ -879,6 +1058,14 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
       <button class="qty-btn" onclick="adjQty(-1)">−</button>
       <input type="number" class="qty-input" id="conf-qty" value="1" min="0" oninput="updateStavPo()">
       <button class="qty-btn" onclick="adjQty(1)">+</button>
+    </div>
+
+    <div class="qty-quick" id="conf-qty-quick">
+      <button class="qty-quick-btn" onclick="addQty(1)">+1</button>
+      <button class="qty-quick-btn" onclick="addQty(5)">+5</button>
+      <button class="qty-quick-btn" onclick="addQty(10)">+10</button>
+      <button class="qty-quick-btn" onclick="addQty(50)">+50</button>
+      <button class="qty-quick-btn" onclick="addQty(100)">+100</button>
     </div>
 
     <input type="text" class="note-input" id="conf-note" placeholder="Poznámka (volitelná)…">
@@ -1056,6 +1243,7 @@ function switchTab(name) {
   if (name === 'historie') renderHistorie();
   if (name === 'qr') renderQrList();
   if (name === 'nast') renderInfo();
+  if (name === 'prehled') renderPrehled();
 }
 
 // === RENDER ALL ===
@@ -1257,6 +1445,18 @@ function adjQty(d) {
   var v = parseInt(inp.value, 10) || 0;
   v = Math.max(0, v + d);
   inp.value = v;
+  updateStavPo();
+}
+
+function addQty(n) {
+  // Pro inventura (=) přepíše hodnotu, jinak přičte
+  var inp = document.getElementById('conf-qty');
+  if (STATE.action === '=') {
+    inp.value = n;
+  } else {
+    var v = parseInt(inp.value, 10) || 0;
+    inp.value = Math.max(0, v + n);
+  }
   updateStavPo();
 }
 
@@ -1627,6 +1827,203 @@ function renderHistorie() {
   }
   list.innerHTML = html;
 }
+
+function renderPrehled() {
+  var box = document.getElementById('prehled-content');
+  if (!box) return;
+
+  if (STATE.etikety.length === 0) {
+    box.innerHTML = '<div class="empty"><div class="empty-icon">📊</div>Žádná data. Synchronizuj se Sheets.</div>';
+    return;
+  }
+
+  // Statistika
+  var celkem = STATE.etikety.length;
+  var totalKs = 0;
+  var prazdne = 0;
+  var podMin = 0;
+  var sObrazkem = 0;
+
+  for (var i = 0; i < STATE.etikety.length; i++) {
+    var e = STATE.etikety[i];
+    totalKs += e.stav;
+    if (e.stav <= 0) prazdne++;
+    else if (e.minimum > 0 && e.stav < e.minimum) podMin++;
+    if (e.obrazek_url) sObrazkem++;
+  }
+
+  // Pohyby za posledních 7 dní
+  var nyni = Date.now();
+  var pred7 = nyni - 7 * 24 * 60 * 60 * 1000;
+  var pohyb7 = 0;
+  var pohyb7Plus = 0;
+  var pohyb7Minus = 0;
+  for (var j = 0; j < STATE.pohyby.length; j++) {
+    var p = STATE.pohyby[j];
+    var t = new Date(p.timestamp).getTime();
+    if (t >= pred7) {
+      pohyb7++;
+      if (p.typ_pohybu === '+') pohyb7Plus += p.mnozstvi;
+      else if (p.typ_pohybu === '-') pohyb7Minus += p.mnozstvi;
+    }
+  }
+
+  var html = '';
+
+  // === HLAVNÍ KARTY ===
+  html += '<div class="dash-grid">';
+  html += '<div class="dash-card info">' +
+    '<div class="dash-label">Etiket celkem</div>' +
+    '<div class="dash-num">' + celkem + '</div>' +
+    '<div class="dash-sub">' + sObrazkem + ' s obrázkem</div>' +
+  '</div>';
+  html += '<div class="dash-card success">' +
+    '<div class="dash-label">Kusů na skladě</div>' +
+    '<div class="dash-num">' + totalKs.toLocaleString('cs-CZ') + '</div>' +
+    '<div class="dash-sub">napříč všemi etiketami</div>' +
+  '</div>';
+  html += '<div class="dash-card warning">' +
+    '<div class="dash-label">Nula kusů</div>' +
+    '<div class="dash-num">' + prazdne + '</div>' +
+    '<div class="dash-sub">je třeba objednat</div>' +
+  '</div>';
+  html += '<div class="dash-card danger">' +
+    '<div class="dash-label">Pod minimem</div>' +
+    '<div class="dash-num">' + podMin + '</div>' +
+    '<div class="dash-sub">brzy dojde</div>' +
+  '</div>';
+  html += '</div>';
+
+  // === POHYBY ZA 7 DNÍ ===
+  html += '<div class="dash-section-title"><span class="dash-section-icon">📈</span>Aktivita za posledních 7 dní</div>';
+  html += '<div class="dash-grid">';
+  html += '<div class="dash-card">' +
+    '<div class="dash-label">Pohybů</div>' +
+    '<div class="dash-num">' + pohyb7 + '</div>' +
+  '</div>';
+  html += '<div class="dash-card success">' +
+    '<div class="dash-label">Naskladněno</div>' +
+    '<div class="dash-num">+' + pohyb7Plus + '</div>' +
+    '<div class="dash-sub">ks · vyskl.: ' + pohyb7Minus + ' ks</div>' +
+  '</div>';
+  html += '</div>';
+
+  // === TOP PROBLÉMOVÉ ===
+  var problemy = [];
+  for (var k = 0; k < STATE.etikety.length; k++) {
+    var et = STATE.etikety[k];
+    if (et.stav <= 0) {
+      problemy.push({ et: et, prio: 0 });
+    } else if (et.minimum > 0 && et.stav < et.minimum) {
+      problemy.push({ et: et, prio: 1 });
+    }
+  }
+  problemy.sort(function (a, b) {
+    if (a.prio !== b.prio) return a.prio - b.prio;
+    return a.et.stav - b.et.stav;
+  });
+
+  if (problemy.length > 0) {
+    html += '<div class="dash-section-title"><span class="dash-section-icon">⚠️</span>Vyžaduje pozornost (' + problemy.length + ')</div>';
+    var topN = Math.min(8, problemy.length);
+    for (var l = 0; l < topN; l++) {
+      var pp = problemy[l].et;
+      var cls = pp.stav <= 0 ? 'zero' : 'low';
+      var imgHtml = pp.obrazek_url
+        ? '<img class="dash-top-img" src="' + esc(pp.obrazek_url) + '" loading="lazy" alt="" onerror="this.outerHTML=\'<div class=&quot;dash-top-img-ph&quot;>🏷️</div>\'">'
+        : '<div class="dash-top-img-ph">🏷️</div>';
+      html += '<div class="dash-top-row ' + cls + '" onclick="openConfirmFor(\'' + pp.id + '\')">' +
+        imgHtml +
+        '<div class="dash-top-info">' +
+          '<div class="dash-top-nazev">' + esc(pp.nazev) + '</div>' +
+          '<div class="dash-top-meta">' + esc(pp.id) + (pp.typ ? ' · ' + esc(pp.typ) : '') +
+            (pp.minimum > 0 ? ' · min ' + pp.minimum : '') + '</div>' +
+        '</div>' +
+        '<div class="dash-top-stav ' + cls + '">' + pp.stav + '</div>' +
+      '</div>';
+    }
+    if (problemy.length > topN) {
+      html += '<div style="text-align:center;color:var(--ll-gray);font-size:12px;margin-top:8px">' +
+        'a dalších ' + (problemy.length - topN) + ' …' +
+      '</div>';
+    }
+  }
+
+  // === TOP SPOTŘEBOVÁVANÉ za 30 dní ===
+  var pred30 = nyni - 30 * 24 * 60 * 60 * 1000;
+  var consumed = {};
+  for (var m = 0; m < STATE.pohyby.length; m++) {
+    var pm = STATE.pohyby[m];
+    if (pm.typ_pohybu !== '-') continue;
+    var t2 = new Date(pm.timestamp).getTime();
+    if (t2 < pred30) continue;
+    if (!consumed[pm.id]) consumed[pm.id] = { id: pm.id, nazev: pm.nazev, total: 0 };
+    consumed[pm.id].total += pm.mnozstvi;
+  }
+  var consumedArr = [];
+  for (var ck in consumed) consumedArr.push(consumed[ck]);
+  consumedArr.sort(function (a, b) { return b.total - a.total; });
+
+  if (consumedArr.length > 0) {
+    html += '<div class="dash-section-title"><span class="dash-section-icon">🔥</span>Nejvíc spotřebované (30 dní)</div>';
+    var topConsume = Math.min(5, consumedArr.length);
+    for (var n = 0; n < topConsume; n++) {
+      var cc = consumedArr[n];
+      var et2 = findEtiketa(cc.id);
+      var imgHtml2 = (et2 && et2.obrazek_url)
+        ? '<img class="dash-top-img" src="' + esc(et2.obrazek_url) + '" loading="lazy" alt="" onerror="this.outerHTML=\'<div class=&quot;dash-top-img-ph&quot;>🏷️</div>\'">'
+        : '<div class="dash-top-img-ph">🏷️</div>';
+      html += '<div class="dash-top-row" onclick="openConfirmFor(\'' + cc.id + '\')">' +
+        imgHtml2 +
+        '<div class="dash-top-info">' +
+          '<div class="dash-top-nazev">' + esc(cc.nazev) + '</div>' +
+          '<div class="dash-top-meta">' + esc(cc.id) +
+            (et2 ? ' · zbývá ' + et2.stav + ' ks' : '') + '</div>' +
+        '</div>' +
+        '<div class="dash-top-stav">−' + cc.total + '</div>' +
+      '</div>';
+    }
+  }
+
+  // === STAT DLE KATEGORIE ===
+  var kategorie = {};
+  for (var x = 0; x < STATE.etikety.length; x++) {
+    var ex = STATE.etikety[x];
+    var k = ex.kategorie || '(bez kategorie)';
+    if (!kategorie[k]) kategorie[k] = { name: k, celkem: 0, ks: 0, zero: 0, low: 0 };
+    kategorie[k].celkem++;
+    kategorie[k].ks += ex.stav;
+    if (ex.stav <= 0) kategorie[k].zero++;
+    else if (ex.minimum > 0 && ex.stav < ex.minimum) kategorie[k].low++;
+  }
+  var katArr = [];
+  for (var kk in kategorie) katArr.push(kategorie[kk]);
+  katArr.sort(function (a, b) { return b.celkem - a.celkem; });
+
+  if (katArr.length > 0) {
+    html += '<div class="dash-section-title"><span class="dash-section-icon">📂</span>Podle kategorie</div>';
+    var maxKs = 1;
+    for (var y = 0; y < katArr.length; y++) if (katArr[y].ks > maxKs) maxKs = katArr[y].ks;
+
+    for (var z = 0; z < katArr.length; z++) {
+      var kat = katArr[z];
+      var pct = Math.min(100, (kat.ks / maxKs) * 100);
+      var barCls = '';
+      if (kat.zero > 0) barCls = 'warning';
+      if (kat.low > kat.celkem * 0.3) barCls = 'danger';
+      html += '<div class="dash-cat-row">' +
+        '<div class="dash-cat-name">' + esc(kat.name) + ' <span style="color:var(--ll-gray);font-weight:500">(' + kat.celkem + ')</span></div>' +
+        '<div class="dash-cat-bar"><div class="dash-cat-bar-fill ' + barCls + '" style="width:' + pct + '%"></div></div>' +
+        '<div class="dash-cat-stats">' + kat.ks + ' ks' +
+          (kat.zero > 0 ? '<br><span style="color:var(--ll-orange);font-size:10px">' + kat.zero + ' nula</span>' : '') +
+        '</div>' +
+      '</div>';
+    }
+  }
+
+  box.innerHTML = html;
+}
+
 
 function renderRecentPohyby() {
   var box = document.getElementById('recent-pohyby');
