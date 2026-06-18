@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#3B1A0D">
-<title>LL Etikety - inventura v16</title>
+<title>LL Etikety - inventura v16.1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1522,7 +1522,7 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
           <div>Etiket v cache: <strong id="info-etiket">0</strong></div>
           <div>Pohybů: <strong id="info-pohybu">0</strong></div>
           <div>Ve frontě: <strong id="info-fronta">0</strong></div>
-          <div>Verze: <strong>16.0</strong></div>
+          <div>Verze: <strong>16.1</strong></div>
         </div>
       </div>
 
@@ -1575,8 +1575,8 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 </div>
 
 <!-- CONFIRM OVERLAY -->
-<div class="confirm-overlay" id="confirm-overlay">
-  <div class="confirm-sheet">
+<div class="confirm-overlay" id="confirm-overlay" onclick="if(event.target===this)closeConfirm()">
+  <div class="confirm-sheet" onclick="event.stopPropagation()">
     <div class="confirm-img-wrap" id="conf-img-wrap">
       <div class="confirm-img-empty">📷 Bez náhledu</div>
     </div>
@@ -1889,6 +1889,9 @@ function switchTab(name) {
   if (name === 'objednat') renderOrder();
   if (name === 'nast') renderInfo();
   if (name === 'prehled') renderPrehled();
+
+  // Po DOM updatu reapply fitImg na cached obrázky (onload se nemusí spustit)
+  setTimeout(function () { applyFitToAll(); }, 100);
 
   // Při přepnutí na data tab vyvolat tichý sync
   if (name === 'stav' || name === 'historie' || name === 'prehled' || name === 'objednat') {
@@ -3311,13 +3314,29 @@ function esc(s) {
 
 // Smart pozicování obrázků: pásky/úzké → center, normální → top left
 function fitImg(img) {
-  if (!img || !img.naturalWidth || !img.naturalHeight) return;
+  if (!img) return;
+  // Pokud se obrázek ještě nenačetl, počkej
+  if (!img.complete || !img.naturalWidth) {
+    img.addEventListener('load', function () { fitImg(this); }, { once: true });
+    return;
+  }
+  if (!img.naturalHeight) return;
   var ratio = img.naturalWidth / img.naturalHeight;
-  // Pásky (široké) - ratio > 2.2 nebo úzké výškové < 0.45 → centrovat
-  if (ratio > 2.2 || ratio < 0.45) {
+  // CENTER jen pro extrémně horizontální pásky (ratio > 3) nebo vertikální (< 0.33)
+  // Vše ostatní zůstává top-left (etikety, dezerty, normální fotky)
+  if (ratio > 3.0 || ratio < 0.33) {
     img.style.objectPosition = 'center center';
   } else {
     img.style.objectPosition = 'top left';
+  }
+}
+
+// Aplikuje fitImg na všechny obrázky v kontejneru - voláno po renderu pro cached obrázky
+function applyFitToAll(rootEl) {
+  var root = rootEl || document;
+  var imgs = root.querySelectorAll('img.gal-img, img.et-thumb, img.dash-top-img, img.ord-img');
+  for (var i = 0; i < imgs.length; i++) {
+    fitImg(imgs[i]);
   }
 }
 
