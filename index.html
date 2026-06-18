@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#3B1A0D">
-<title>LL Etikety - inventura v13</title>
+<title>LL Etikety - inventura v16</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -227,6 +227,42 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
   font-size: 12px;
 }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* === OBJEDNAT TAB === */
+.ord-stat { background: var(--ll-cream); border-radius: 10px; padding: 10px 14px; text-align: center; min-width: 90px; flex: 1; border-left: 3px solid var(--ll-olive); }
+.ord-stat.warn { border-left-color: var(--ll-orange); background: #fff3e8; }
+.ord-stat.info { border-left-color: #888; background: #f5f5f5; }
+.ord-stat-num { font-size: 24px; font-weight: 800; color: var(--ll-dark); line-height: 1; }
+.ord-stat-lbl { font-size: 10px; color: var(--ll-gray); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; font-weight: 700; }
+.ord-empty { padding: 40px 20px; text-align: center; color: #1F7A3C; font-size: 18px; font-weight: 700; background: #e8f5e9; border-radius: 12px; }
+.ord-empty small { color: #555; font-weight: 400; font-size: 13px; line-height: 1.5; }
+.ord-row { display: grid; grid-template-columns: 56px 1fr auto; gap: 10px; align-items: center; padding: 10px; background: white; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid var(--ll-orange); }
+.ord-row.is-hidden { opacity: 0.45; border-left-color: #ccc; background: #fafafa; }
+.ord-img-wrap { width: 56px; height: 56px; border-radius: 8px; overflow: hidden; background: var(--ll-cream); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ord-img { width: 100%; height: 100%; object-fit: cover; object-position: top left; }
+.ord-img-ph { font-size: 22px; opacity: 0.5; }
+.ord-info { min-width: 0; }
+.ord-id { font-weight: 800; color: var(--ll-dark); font-size: 13px; font-family: 'Courier New', monospace; }
+.ord-id small { color: var(--ll-gray); font-weight: 400; font-size: 11px; }
+.ord-name { font-size: 13px; color: var(--ll-gray); line-height: 1.3; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ord-stav { font-size: 12px; color: var(--ll-gray); margin-top: 4px; }
+.ord-low { color: var(--ll-orange); font-weight: 800; }
+.ord-controls { display: flex; gap: 6px; align-items: center; }
+.ord-qty { display: flex; align-items: center; background: var(--ll-cream); border-radius: 8px; padding: 2px; }
+.ord-qty-btn { background: white; border: none; width: 28px; height: 28px; border-radius: 6px; font-size: 18px; font-weight: 800; color: var(--ll-orange); cursor: pointer; }
+.ord-qty-btn:active { transform: scale(0.92); }
+.ord-qty-input { width: 56px; border: none; background: transparent; text-align: center; font-weight: 800; font-size: 14px; color: var(--ll-dark); font-family: inherit; padding: 0 4px; }
+.ord-qty-input::-webkit-outer-spin-button, .ord-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.ord-hide { background: transparent; border: none; color: #aaa; font-size: 16px; cursor: pointer; padding: 4px 8px; }
+.ord-hide:active, .ord-hide:hover { color: var(--ll-orange); }
+.ord-show { background: var(--ll-orange); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+/* Pod minimem badge v galerii a stav listu */
+.gal-low-badge, .et-low-badge { position: absolute; top: 6px; right: 6px; background: var(--ll-orange); color: white; font-size: 10px; font-weight: 800; padding: 3px 7px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 2; }
+.gal-img-wrap { position: relative; }
+.et-row { position: relative; }
+.et-row.low-stock::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--ll-orange); border-radius: 2px 0 0 2px; }
+
 
 .online-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ll-green); display: inline-block; }
 .online-dot.off { background: var(--ll-red); }
@@ -1444,6 +1480,29 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
       </div>
     </div>
 
+    <!-- TAB: OBJEDNAT -->
+    <div class="tab-content" data-tab="objednat">
+      <div class="card">
+        <div class="card-title">Co je třeba objednat</div>
+        <p style="font-size:13px;color:var(--ll-gray);margin-bottom:12px;line-height:1.5">
+          Seznam etiket, jejichž stav klesl pod minimum. Návrh objednávky doplní zásobu na 3× minimum.
+          Můžeš upravit množství pomocí <strong>+/−</strong> nebo skrýt položku, kterou tentokrát neobjednáváš.
+        </p>
+        <div id="order-stats" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap"></div>
+        <div id="order-list"></div>
+        <div id="order-actions" style="display:none;margin-top:14px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button class="inv-btn primary" onclick="orderExportCsv()">
+              <span class="inv-btn-icon">📥</span><span>Stáhnout CSV</span>
+            </button>
+            <button class="inv-btn same" onclick="orderPrint()">
+              <span class="inv-btn-icon">🖨️</span><span>Vytisknout</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- TAB: NASTAVENI -->
     <div class="tab-content" data-tab="nast">
       <div class="card">
@@ -1463,7 +1522,7 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
           <div>Etiket v cache: <strong id="info-etiket">0</strong></div>
           <div>Pohybů: <strong id="info-pohybu">0</strong></div>
           <div>Ve frontě: <strong id="info-fronta">0</strong></div>
-          <div>Verze: <strong>13.0</strong></div>
+          <div>Verze: <strong>16.0</strong></div>
         </div>
       </div>
 
@@ -1490,6 +1549,9 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
     </button>
     <button class="tab" data-tab="qr" onclick="switchTab('qr')">
       <span class="tab-icon">🏷️</span><span>QR</span>
+    </button>
+    <button class="tab" data-tab="objednat" onclick="switchTab('objednat')">
+      <span class="tab-icon">🛒</span><span>Objednat</span>
     </button>
     <button class="tab" data-tab="nast" onclick="switchTab('nast')">
       <span class="tab-icon">⚙️</span><span>Nast.</span>
@@ -1824,11 +1886,12 @@ function switchTab(name) {
   if (name === 'stav') renderStav();
   if (name === 'historie') renderHistorie();
   if (name === 'qr') renderQrList();
+  if (name === 'objednat') renderOrder();
   if (name === 'nast') renderInfo();
   if (name === 'prehled') renderPrehled();
 
   // Při přepnutí na data tab vyvolat tichý sync
-  if (name === 'stav' || name === 'historie' || name === 'prehled') {
+  if (name === 'stav' || name === 'historie' || name === 'prehled' || name === 'objednat') {
     autoFetch();
   }
 }
@@ -1876,6 +1939,10 @@ function renderHomeStats() {
     '<div class="home-stat ' + (prazdne > 0 ? 'warn' : '') + '" onclick="switchTab(\'prehled\')">' +
       '<div class="home-stat-num">' + prazdne + '</div>' +
       '<div class="home-stat-label">Nula ks</div>' +
+    '</div>' +
+    '<div class="home-stat ' + (podMin > 0 ? 'warn' : '') + '" onclick="switchTab(\'objednat\')">' +
+      '<div class="home-stat-num">' + podMin + '</div>' +
+      '<div class="home-stat-label">Pod min</div>' +
     '</div>' +
     '<div class="home-stat" onclick="switchTab(\'historie\')">' +
       '<div class="home-stat-num">' + pohybyDnes + '</div>' +
@@ -2426,6 +2493,7 @@ function renderGalerie(list, rows) {
     html += '<div class="' + cls + '" onclick="openConfirmFor(\'' + e.id + '\')">' +
       '<div class="gal-img-wrap">' +
         imgHtml +
+        (e.minimum > 0 && e.stav < e.minimum ? '<div class="gal-low-badge">⚠ POD MIN</div>' : '') +
         '<div class="gal-stav-badge ' + badgeCls + '">' + e.stav + '</div>' +
       '</div>' +
       '<div class="gal-info">' +
@@ -2457,6 +2525,7 @@ function renderSeznam(list, rows) {
         '<div class="etiketa-meta">' +
           (e2.kategorie ? '<span class="etiketa-meta-chip">' + esc(e2.kategorie) + '</span>' : '') +
           (e2.typ ? '<span class="etiketa-meta-chip">' + esc(e2.typ) + '</span>' : '') +
+          (e2.minimum > 0 && e2.stav < e2.minimum ? '<span class="etiketa-meta-chip" style="background:var(--ll-orange);color:white;font-weight:800">⚠ pod min ' + e2.minimum + '</span>' : '') +
         '</div>' +
       '</div>' +
       '<div class="etiketa-stav">' +
@@ -2787,6 +2856,265 @@ function updateQrCount() {
   for (var k in qrSelected) n++;
   var el = document.getElementById('qr-count');
   if (el) el.textContent = n;
+}
+
+// === OBJEDNAT ===
+
+var ORDER = {
+  // map id -> { mnozstvi: N, hidden: bool }
+  state: {}
+};
+
+function renderOrder() {
+  var box = document.getElementById('order-list');
+  var stats = document.getElementById('order-stats');
+  var actions = document.getElementById('order-actions');
+  if (!box) return;
+
+  // Najdi etikety pod minimem (kde min > 0)
+  var podMin = [];
+  var bezMin = 0;
+  for (var i = 0; i < STATE.etikety.length; i++) {
+    var e = STATE.etikety[i];
+    var minimum = Number(e.minimum) || 0;
+    var stav = Number(e.stav) || 0;
+    if (minimum > 0 && stav < minimum) {
+      podMin.push(e);
+    }
+    if (minimum === 0) bezMin++;
+  }
+  podMin.sort(function (a, b) {
+    var ra = (Number(a.stav) || 0) / Math.max(1, Number(a.minimum) || 1);
+    var rb = (Number(b.stav) || 0) / Math.max(1, Number(b.minimum) || 1);
+    return ra - rb; // nejhorší poměr stav/min nahoře
+  });
+
+  // Statistiky
+  stats.innerHTML =
+    '<div class="ord-stat warn"><div class="ord-stat-num">' + podMin.length + '</div><div class="ord-stat-lbl">pod minimem</div></div>' +
+    '<div class="ord-stat"><div class="ord-stat-num">' + STATE.etikety.length + '</div><div class="ord-stat-lbl">etiket celkem</div></div>' +
+    (bezMin > 0 ? '<div class="ord-stat info"><div class="ord-stat-num">' + bezMin + '</div><div class="ord-stat-lbl">bez nastaveného min</div></div>' : '');
+
+  if (podMin.length === 0) {
+    box.innerHTML = '<div class="ord-empty">✓ Vše OK<br><small>Žádná etiketa není pod minimem</small>' +
+      (bezMin > 0 ? '<br><br><small style="color:var(--ll-gray-light)">' + bezMin + ' etiket nemá nastavené minimum — můžeš v Stav / detailu nastavit hodnotu, pod kterou má apka začít upozorňovat.</small>' : '') +
+      '</div>';
+    actions.style.display = 'none';
+    return;
+  }
+
+  var html = '';
+  var allHidden = true;
+  for (var k = 0; k < podMin.length; k++) {
+    var e2 = podMin[k];
+    var min = Number(e2.minimum) || 0;
+    var st = Number(e2.stav) || 0;
+    var idSafe = e2.id.replace(/[^a-zA-Z0-9-_]/g, '_');
+
+    // Default návrh: doplnit na 3× min
+    var defaultOrder = Math.max(0, 3 * min - st);
+    var current = ORDER.state[e2.id];
+    var mnozstvi = current && current.mnozstvi != null ? current.mnozstvi : defaultOrder;
+    var hidden = current && current.hidden;
+    if (!hidden) allHidden = false;
+
+    var imgHtml = e2.obrazek_url
+      ? '<img class="ord-img" src="' + esc(e2.obrazek_url) + '" loading="lazy" alt="" onload="fitImg(this)" onerror="this.style.display=\'none\'">'
+      : '<div class="ord-img ord-img-ph">🏷️</div>';
+
+    html += '<div class="ord-row' + (hidden ? ' is-hidden' : '') + '" id="ord-row-' + esc(idSafe) + '">' +
+      '<div class="ord-img-wrap">' + imgHtml + '</div>' +
+      '<div class="ord-info">' +
+        '<div class="ord-id">' + esc(e2.id) + (e2.typ ? ' <small>(' + esc(e2.typ) + ')</small>' : '') + '</div>' +
+        '<div class="ord-name">' + esc(e2.nazev || '') + '</div>' +
+        '<div class="ord-stav">Stav: <strong class="ord-low">' + st + '</strong> / min ' + min + '</div>' +
+      '</div>' +
+      '<div class="ord-controls">' +
+        (hidden ?
+          '<button class="ord-show" onclick="orderShow(\'' + esc(e2.id) + '\')">↩ Vrátit</button>' :
+          '<div class="ord-qty">' +
+            '<button class="ord-qty-btn" onclick="orderAdjust(\'' + esc(e2.id) + '\', -50)">−</button>' +
+            '<input type="number" class="ord-qty-input" value="' + mnozstvi + '" min="0" step="10" onchange="orderSet(\'' + esc(e2.id) + '\', this.value)">' +
+            '<button class="ord-qty-btn" onclick="orderAdjust(\'' + esc(e2.id) + '\', 50)">+</button>' +
+          '</div>' +
+          '<button class="ord-hide" onclick="orderHide(\'' + esc(e2.id) + '\')" title="Tentokrát neobjednávat">✕</button>'
+        ) +
+      '</div>' +
+    '</div>';
+  }
+
+  box.innerHTML = html;
+  actions.style.display = allHidden ? 'none' : 'block';
+}
+
+function orderAdjust(id, delta) {
+  var et = findEtiketa(id);
+  if (!et) return;
+  var min = Number(et.minimum) || 0;
+  var st = Number(et.stav) || 0;
+  var current = ORDER.state[id];
+  var val = current && current.mnozstvi != null ? current.mnozstvi : Math.max(0, 3 * min - st);
+  var newVal = Math.max(0, val + delta);
+  ORDER.state[id] = ORDER.state[id] || {};
+  ORDER.state[id].mnozstvi = newVal;
+  renderOrder();
+}
+
+function orderSet(id, val) {
+  var n = Math.max(0, parseInt(val, 10) || 0);
+  ORDER.state[id] = ORDER.state[id] || {};
+  ORDER.state[id].mnozstvi = n;
+}
+
+function orderHide(id) {
+  ORDER.state[id] = ORDER.state[id] || {};
+  ORDER.state[id].hidden = true;
+  renderOrder();
+}
+
+function orderShow(id) {
+  if (ORDER.state[id]) ORDER.state[id].hidden = false;
+  renderOrder();
+}
+
+function orderCollectItems() {
+  var items = [];
+  for (var i = 0; i < STATE.etikety.length; i++) {
+    var e = STATE.etikety[i];
+    var min = Number(e.minimum) || 0;
+    var st = Number(e.stav) || 0;
+    if (min === 0 || st >= min) continue;
+    var s = ORDER.state[e.id];
+    if (s && s.hidden) continue;
+    var mnozstvi = s && s.mnozstvi != null ? s.mnozstvi : Math.max(0, 3 * min - st);
+    if (mnozstvi === 0) continue;
+    items.push({
+      id: e.id,
+      nazev: e.nazev || '',
+      typ: e.typ || '',
+      kategorie: e.kategorie || '',
+      stav: st,
+      minimum: min,
+      objednat: mnozstvi
+    });
+  }
+  return items;
+}
+
+function orderExportCsv() {
+  var items = orderCollectItems();
+  if (items.length === 0) { toast('Žádné položky k objednání', 'error'); return; }
+
+  var csv = '\ufeff';
+  csv += 'Objednavka etiket;Datum;' + new Date().toLocaleString('cs-CZ') + ';;;;\r\n';
+  csv += 'Vystavil;' + (STATE.user ? STATE.user.jmeno : '') + ';;;;;\r\n';
+  csv += ';;;;;;\r\n';
+  csv += 'ID;Nazev;Typ;Kategorie;Stav_aktualni;Minimum;Objednat\r\n';
+  for (var i = 0; i < items.length; i++) {
+    var it = items[i];
+    csv += csvEscape(it.id) + ';' +
+           csvEscape(it.nazev) + ';' +
+           csvEscape(it.typ) + ';' +
+           csvEscape(it.kategorie) + ';' +
+           it.stav + ';' +
+           it.minimum + ';' +
+           it.objednat + '\r\n';
+  }
+
+  var stamp = (new Date()).toISOString().slice(0, 16).replace(/[T:]/g, '-');
+  var filename = 'LL-objednavka-' + stamp + '.csv';
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+  toast('CSV staženo (' + items.length + ' položek)', 'success');
+}
+
+function orderPrint() {
+  var items = orderCollectItems();
+  if (items.length === 0) { toast('Žádné položky k objednání', 'error'); return; }
+
+  var dt = new Date();
+  var dateStr = dt.toLocaleDateString('cs-CZ') + ' ' + dt.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+  var user = STATE.user ? STATE.user.jmeno : '';
+
+  // Sečíst dle kategorie pro souhrn
+  var totalKs = 0;
+  var rows = '';
+  for (var i = 0; i < items.length; i++) {
+    var it = items[i];
+    totalKs += it.objednat;
+    rows += '<tr>' +
+      '<td class="mono">' + esc(it.id) + '</td>' +
+      '<td>' + esc(it.nazev) + (it.typ ? ' <small>(' + esc(it.typ) + ')</small>' : '') + '</td>' +
+      '<td class="num">' + it.stav + '</td>' +
+      '<td class="num">' + it.minimum + '</td>' +
+      '<td class="num order-qty">' + it.objednat + ' ks</td>' +
+    '</tr>';
+  }
+
+  var html =
+'<!DOCTYPE html>\n' +
+'<html lang="cs">\n' +
+'<head>\n' +
+'<meta charset="UTF-8">\n' +
+'<title>LL Etikety - Objednávka ' + dateStr + '</title>\n' +
+'<style>\n' +
+'@page { size: A4; margin: 12mm; }\n' +
+'* { box-sizing: border-box; margin: 0; padding: 0; }\n' +
+'body { font-family: Arial, sans-serif; padding: 12mm; color: #222; background: #f5f5f5; }\n' +
+'.toolbar { position: sticky; top: 0; background: white; padding: 12px 16px; margin: -12mm -12mm 8mm; border-bottom: 1px solid #ddd; display: flex; gap: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 10; flex-wrap: wrap; align-items: center; }\n' +
+'.btn-print { background: #E85520; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }\n' +
+'.btn-close { background: #f0e8d6; color: #3B1A0D; border: none; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-left: auto; }\n' +
+'h1 { color: #3B1A0D; font-size: 22pt; margin-bottom: 4mm; }\n' +
+'.meta { color: #666; font-size: 10pt; margin-bottom: 8mm; }\n' +
+'.meta div { margin-bottom: 1mm; }\n' +
+'.summary { background: #f8f5ec; padding: 4mm 6mm; border-radius: 3mm; margin-bottom: 8mm; border-left: 4px solid #E85520; }\n' +
+'.summary strong { color: #3B1A0D; font-size: 14pt; }\n' +
+'table { width: 100%; border-collapse: collapse; font-size: 10pt; }\n' +
+'th { background: #3B1A0D; color: #F0E8D6; padding: 3mm 2mm; text-align: left; font-weight: 700; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.5px; }\n' +
+'td { padding: 2mm 2mm; border-bottom: 1px solid #eee; }\n' +
+'tr:nth-child(even) { background: #fafafa; }\n' +
+'.num { text-align: right; font-variant-numeric: tabular-nums; }\n' +
+'.mono { font-family: "Courier New", monospace; font-size: 9pt; }\n' +
+'.order-qty { color: #E85520; font-weight: 800; font-size: 11pt; }\n' +
+'small { color: #888; font-weight: 400; }\n' +
+'.sign { margin-top: 12mm; display: grid; grid-template-columns: 1fr 1fr; gap: 12mm; }\n' +
+'.sign-box { border-top: 1px solid #999; padding-top: 2mm; font-size: 10pt; color: #666; }\n' +
+'@media print { body { background: white; padding: 0; } .toolbar { display: none; } table { font-size: 9pt; } th { font-size: 8pt; } }\n' +
+'</style>\n' +
+'</head>\n' +
+'<body>\n' +
+'<div class="toolbar">\n' +
+'  <strong>Náhled objednávky</strong>\n' +
+'  <button class="btn-print" onclick="window.print()">🖨️ Vytisknout / Uložit jako PDF</button>\n' +
+'  <button class="btn-close" onclick="window.close()">Zavřít</button>\n' +
+'</div>\n' +
+'<h1>🛒 Objednávka etiket – Libeřské lahůdky</h1>\n' +
+'<div class="meta">\n' +
+'  <div><strong>Datum:</strong> ' + esc(dateStr) + '</div>\n' +
+'  <div><strong>Vystavil/a:</strong> ' + esc(user) + '</div>\n' +
+'</div>\n' +
+'<div class="summary">\n' +
+'  Položek k objednání: <strong>' + items.length + '</strong> &nbsp;·&nbsp; Celkem kusů: <strong>' + totalKs + ' ks</strong>\n' +
+'</div>\n' +
+'<table>\n' +
+'<thead><tr><th>ID</th><th>Název</th><th class="num">Stav</th><th class="num">Min.</th><th class="num">Objednat</th></tr></thead>\n' +
+'<tbody>' + rows + '</tbody>\n' +
+'</table>\n' +
+'<div class="sign">\n' +
+'  <div class="sign-box">Datum a podpis – vystavil/a</div>\n' +
+'  <div class="sign-box">Datum a podpis – schválil/a</div>\n' +
+'</div>\n' +
+'</body>\n' +
+'</html>';
+
+  var w = window.open('', '_blank');
+  if (!w) { toast('Prohlížeč zablokoval popup. Povol popupy a zkus znovu.', 'error'); return; }
+  w.document.open(); w.document.write(html); w.document.close();
+  toast('Otevřeno v novém okně', 'success');
 }
 
 function generateQrSheet() {
@@ -3402,13 +3730,307 @@ function invShowSummary() {
     }
   }
 
-  html += '<button class="inv-start-btn" onclick="invClose()" style="margin-top:18px">Zavřít</button>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px">' +
+    '<button class="inv-btn primary" onclick="invExportCsv()">' +
+      '<span class="inv-btn-icon">📥</span>' +
+      '<span>Stáhnout CSV</span>' +
+    '</button>' +
+    '<button class="inv-btn same" onclick="invPrintSummary()">' +
+      '<span class="inv-btn-icon">🖨️</span>' +
+      '<span>Vytisknout</span>' +
+    '</button>' +
+  '</div>';
+
+  html += '<button class="inv-start-btn" onclick="invClose()" style="margin-top:10px">Zavřít</button>';
 
   document.getElementById('inv-body').innerHTML = html;
+
+  // Ulož snapshot pro export před cleanup
+  window._lastInvSnapshot = {
+    done: INV.done.slice(),
+    startedAt: INV.startedAt,
+    finishedAt: new Date().toISOString(),
+    user: STATE.user ? STATE.user.jmeno : 'Anonym',
+    filter: INV.filter
+  };
 
   // Vyčisti saved state
   INV.active = false;
   invSaveState();
+
+  // Automaticky pošli snapshot do listu "Inventury" v Sheets
+  if (STATE.url) {
+    setTimeout(function () { sendInventuraSnapshot(); }, 500);
+  }
+}
+
+function sendInventuraSnapshot() {
+  var snap = window._lastInvSnapshot;
+  if (!snap || !STATE.url) return;
+
+  // Status badge v souhrnu
+  var summary = document.getElementById('inv-body');
+  if (summary) {
+    var existing = document.getElementById('inv-sheets-status');
+    if (!existing) {
+      var status = document.createElement('div');
+      status.id = 'inv-sheets-status';
+      status.style.cssText = 'margin-top:10px;padding:10px 12px;border-radius:8px;background:#fff8e1;border-left:3px solid #FFA000;color:#5d4037;font-size:13px;display:flex;align-items:center;gap:8px';
+      status.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid #FFA000;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite"></span> Ukládám do Sheets…';
+      summary.appendChild(status);
+    }
+  }
+
+  // Sesbírej položky - jen uložené (akce 'uloz' nebo 'stejne')
+  var items = [];
+  for (var i = 0; i < snap.done.length; i++) {
+    var d = snap.done[i];
+    if (d.akce !== 'uloz' && d.akce !== 'stejne') continue;
+    var et = findEtiketa(d.id);
+    items.push({
+      id: d.id,
+      nazev: et ? et.nazev : '',
+      typ: et ? et.typ : '',
+      kategorie: et ? et.kategorie : '',
+      stav: d.stav != null ? d.stav : (d.stavPred != null ? d.stavPred : 0)
+    });
+  }
+
+  if (items.length === 0) {
+    updateSheetsStatus('error', 'Žádné položky k uložení (vše přeskočeno)');
+    return;
+  }
+
+  var datum = (new Date(snap.finishedAt)).toISOString().slice(0, 10);
+
+  fetch(STATE.url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({
+      action: 'ulozInventuru',
+      datum: datum,
+      items: items
+    })
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d.ok) {
+        var msg = '✓ Uloženo do listu "Inventury" pod sloupec ' + datum;
+        if (d.polozek_aktualizovano != null) {
+          msg += ' (' + d.polozek_aktualizovano + ' upraveno';
+          if (d.polozek_pridano) msg += ', ' + d.polozek_pridano + ' přidáno';
+          msg += ')';
+        }
+        updateSheetsStatus('ok', msg);
+        toast('Inventura uložena do Sheets', 'success');
+      } else {
+        updateSheetsStatus('error', '❌ Chyba: ' + (d.error || 'neznámá') + ' — možná Apps Script není v4');
+      }
+    })
+    .catch(function (err) {
+      updateSheetsStatus('error', '❌ Spojení selhalo: ' + err.message);
+    });
+}
+
+function updateSheetsStatus(state, text) {
+  var el = document.getElementById('inv-sheets-status');
+  if (!el) return;
+  if (state === 'ok') {
+    el.style.cssText = 'margin-top:10px;padding:10px 12px;border-radius:8px;background:#e8f5e9;border-left:3px solid #2e7d32;color:#1b5e20;font-size:13px';
+    el.innerHTML = text;
+  } else if (state === 'error') {
+    el.style.cssText = 'margin-top:10px;padding:10px 12px;border-radius:8px;background:#ffebee;border-left:3px solid #c62828;color:#b71c1c;font-size:13px;display:flex;align-items:center;justify-content:space-between;gap:8px';
+    el.innerHTML = '<span>' + text + '</span>' +
+      '<button onclick="sendInventuraSnapshot()" style="background:#c62828;color:white;border:none;padding:5px 10px;border-radius:5px;font-size:12px;cursor:pointer;font-weight:600">🔄 Zkusit znovu</button>';
+  }
+}
+
+function invExportCsv() {
+  var snap = window._lastInvSnapshot;
+  if (!snap) { toast('Data inventury nejsou k dispozici', 'error'); return; }
+
+  // BOM pro Excel + středník jako oddělovač (česká lokalizace)
+  var csv = '\ufeff';
+  csv += 'Inventura;Datum;' + new Date(snap.finishedAt).toLocaleString('cs-CZ') + ';;;\r\n';
+  csv += 'Provedl;' + (snap.user || '') + ';;;;\r\n';
+  if (snap.filter && (snap.filter.kategorie || snap.filter.typ)) {
+    csv += 'Filtr;' + (snap.filter.kategorie || 'Všechny kategorie') + ';' + (snap.filter.typ || 'Oba typy') + ';;;\r\n';
+  }
+  csv += ';;;;;\r\n';
+  csv += 'ID;Nazev;Typ;Stav_pred;Stav_napocitano;Rozdil;Akce\r\n';
+
+  for (var i = 0; i < snap.done.length; i++) {
+    var d = snap.done[i];
+    var et = findEtiketa(d.id);
+    var nazev = et ? et.nazev : '';
+    var typ = et ? et.typ : '';
+    var diff = '';
+    var akce = '';
+    if (d.akce === 'uloz') {
+      diff = (d.stav - d.stavPred);
+      akce = 'Změna';
+    } else if (d.akce === 'stejne') {
+      diff = 0;
+      akce = 'Beze změny';
+    } else {
+      akce = 'Přeskočeno';
+    }
+    csv += csvEscape(d.id) + ';' +
+           csvEscape(nazev) + ';' +
+           csvEscape(typ) + ';' +
+           (d.stavPred != null ? d.stavPred : '') + ';' +
+           (d.stav != null ? d.stav : '') + ';' +
+           diff + ';' +
+           akce + '\r\n';
+  }
+
+  var stamp = (new Date()).toISOString().slice(0, 16).replace(/[T:]/g, '-');
+  var filename = 'LL-inventura-' + stamp + '.csv';
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 1000);
+  toast('CSV staženo', 'success');
+}
+
+function csvEscape(s) {
+  if (s == null) return '';
+  s = String(s);
+  if (s.indexOf(';') > -1 || s.indexOf('"') > -1 || s.indexOf('\n') > -1) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
+function invPrintSummary() {
+  var snap = window._lastInvSnapshot;
+  if (!snap) { toast('Data inventury nejsou k dispozici', 'error'); return; }
+
+  var dt = new Date(snap.finishedAt);
+  var dateStr = dt.toLocaleDateString('cs-CZ') + ' ' + dt.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+
+  // Statistika
+  var zmeneno = 0, stejne = 0, preskoceno = 0;
+  var rows = '';
+  for (var i = 0; i < snap.done.length; i++) {
+    var d = snap.done[i];
+    var et = findEtiketa(d.id);
+    var nazev = et ? et.nazev : '';
+    var typ = et ? et.typ : '';
+    var akce, akceCls, diff;
+    if (d.akce === 'uloz') {
+      zmeneno++;
+      diff = d.stav - d.stavPred;
+      akce = (diff > 0 ? '+' : '') + diff;
+      akceCls = diff > 0 ? 'pos' : 'neg';
+    } else if (d.akce === 'stejne') {
+      stejne++;
+      diff = 0;
+      akce = '0';
+      akceCls = 'zero';
+    } else {
+      preskoceno++;
+      akce = '—';
+      akceCls = 'skip';
+    }
+    rows += '<tr>' +
+      '<td class="mono">' + esc(d.id) + '</td>' +
+      '<td>' + esc(nazev) + (typ ? ' <small>(' + esc(typ) + ')</small>' : '') + '</td>' +
+      '<td class="num">' + (d.stavPred != null ? d.stavPred : '') + '</td>' +
+      '<td class="num">' + (d.stav != null ? d.stav : '—') + '</td>' +
+      '<td class="num ' + akceCls + '">' + akce + '</td>' +
+    '</tr>';
+  }
+
+  var filterText = '';
+  if (snap.filter && (snap.filter.kategorie || snap.filter.typ)) {
+    filterText = (snap.filter.kategorie || 'Všechny kategorie') + ' · ' + (snap.filter.typ || 'oba typy');
+  } else {
+    filterText = 'Všechny etikety';
+  }
+
+  var html =
+'<!DOCTYPE html>\n' +
+'<html lang="cs">\n' +
+'<head>\n' +
+'<meta charset="UTF-8">\n' +
+'<title>LL Etikety - Inventura ' + dateStr + '</title>\n' +
+'<style>\n' +
+'@page { size: A4; margin: 12mm; }\n' +
+'* { box-sizing: border-box; margin: 0; padding: 0; }\n' +
+'body { font-family: Arial, sans-serif; padding: 12mm; color: #222; background: #f5f5f5; }\n' +
+'.toolbar { position: sticky; top: 0; background: white; padding: 12px 16px; margin: -12mm -12mm 8mm; border-bottom: 1px solid #ddd; display: flex; gap: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 10; flex-wrap: wrap; align-items: center; }\n' +
+'.btn-print { background: #E85520; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }\n' +
+'.btn-close { background: #f0e8d6; color: #3B1A0D; border: none; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-left: auto; }\n' +
+'h1 { color: #3B1A0D; font-size: 22pt; margin-bottom: 4mm; }\n' +
+'.meta { color: #666; font-size: 10pt; margin-bottom: 8mm; }\n' +
+'.meta div { margin-bottom: 1mm; }\n' +
+'.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm; margin-bottom: 8mm; }\n' +
+'.stat { background: #f8f5ec; padding: 4mm; border-radius: 3mm; text-align: center; border-left: 3px solid #6B7A50; }\n' +
+'.stat.warn { border-left-color: #E85520; }\n' +
+'.stat-num { font-size: 24pt; font-weight: 800; color: #3B1A0D; line-height: 1; }\n' +
+'.stat-label { font-size: 9pt; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 1mm; font-weight: 700; }\n' +
+'table { width: 100%; border-collapse: collapse; font-size: 10pt; }\n' +
+'th { background: #3B1A0D; color: #F0E8D6; padding: 3mm 2mm; text-align: left; font-weight: 700; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.5px; }\n' +
+'td { padding: 2mm 2mm; border-bottom: 1px solid #eee; }\n' +
+'tr:nth-child(even) { background: #fafafa; }\n' +
+'.num { text-align: right; font-variant-numeric: tabular-nums; }\n' +
+'.mono { font-family: "Courier New", monospace; font-size: 9pt; }\n' +
+'.pos { color: #1F7A3C; font-weight: 700; }\n' +
+'.neg { color: #C0392B; font-weight: 700; }\n' +
+'.zero { color: #888; }\n' +
+'.skip { color: #aaa; font-style: italic; }\n' +
+'small { color: #888; font-weight: 400; }\n' +
+'.sign { margin-top: 12mm; display: grid; grid-template-columns: 1fr 1fr; gap: 12mm; }\n' +
+'.sign-box { border-top: 1px solid #999; padding-top: 2mm; font-size: 10pt; color: #666; }\n' +
+'@media print { body { background: white; padding: 0; } .toolbar { display: none; } .stats { page-break-after: avoid; } table { font-size: 9pt; } th { font-size: 8pt; } }\n' +
+'</style>\n' +
+'</head>\n' +
+'<body>\n' +
+'<div class="toolbar">\n' +
+'  <strong>Náhled inventury</strong>\n' +
+'  <button class="btn-print" onclick="window.print()">🖨️ Vytisknout / Uložit jako PDF</button>\n' +
+'  <button class="btn-close" onclick="window.close()">Zavřít</button>\n' +
+'</div>\n' +
+'<h1>📊 Inventura etiket – Libeřské lahůdky</h1>\n' +
+'<div class="meta">\n' +
+'  <div><strong>Datum:</strong> ' + esc(dateStr) + '</div>\n' +
+'  <div><strong>Provedl/a:</strong> ' + esc(snap.user) + '</div>\n' +
+'  <div><strong>Rozsah:</strong> ' + esc(filterText) + '</div>\n' +
+'</div>\n' +
+'<div class="stats">\n' +
+'  <div class="stat"><div class="stat-num">' + snap.done.length + '</div><div class="stat-label">Položek celkem</div></div>\n' +
+'  <div class="stat warn"><div class="stat-num">' + zmeneno + '</div><div class="stat-label">Změny</div></div>\n' +
+'  <div class="stat"><div class="stat-num">' + stejne + '</div><div class="stat-label">Beze změn</div></div>\n' +
+'  <div class="stat"><div class="stat-num">' + preskoceno + '</div><div class="stat-label">Přeskočeno</div></div>\n' +
+'</div>\n' +
+'<table>\n' +
+'<thead><tr><th>ID</th><th>Název</th><th class="num">Stav před</th><th class="num">Napočítáno</th><th class="num">Rozdíl</th></tr></thead>\n' +
+'<tbody>' + rows + '</tbody>\n' +
+'</table>\n' +
+'<div class="sign">\n' +
+'  <div class="sign-box">Datum a podpis – provedl/a</div>\n' +
+'  <div class="sign-box">Datum a podpis – ověřil/a</div>\n' +
+'</div>\n' +
+'</body>\n' +
+'</html>';
+
+  var w = window.open('', '_blank');
+  if (!w) {
+    toast('Prohlížeč zablokoval popup. Povol popupy a zkus znovu.', 'error');
+    return;
+  }
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+  toast('Otevřeno v novém okně', 'success');
 }
 
 function invClose() {
