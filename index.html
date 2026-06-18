@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#3B1A0D">
-<title>LL Etikety - inventura v16.3</title>
+<title>LL Etikety - inventura v16.5</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -248,6 +248,37 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 .kat-stat.ok-chip { color: #4d5a37; }
 .kat-stat.low-chip { color: #E85520; }
 .kat-stat.zero-chip { color: #C0392B; }
+
+.diag-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--ll-cream); }
+.diag-row:last-child { border-bottom: none; }
+.diag-row span { color: var(--ll-gray); }
+.diag-row strong { color: var(--ll-dark); font-variant-numeric: tabular-nums; }
+.diag-row strong.diag-warn { color: var(--ll-orange); }
+.diag-alert { margin-top: 12px; padding: 10px 12px; background: #fff8e1; border-left: 3px solid #FFA000; border-radius: 6px; font-size: 12px; color: #5d4037; line-height: 1.5; }
+.diag-alert strong { color: #3B1A0D; }
+
+/* === BIG ACTION BTN (Inventura na home) === */
+.big-action-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--ll-orange) 0%, #C8421A 100%);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin: 14px 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(232,85,32,0.3);
+  transition: transform 0.1s, box-shadow 0.15s;
+  font-family: inherit;
+}
+.big-action-btn:active { transform: scale(0.98); box-shadow: 0 2px 6px rgba(232,85,32,0.25); }
+.big-action-icon { font-size: 32px; flex-shrink: 0; line-height: 1; }
+.big-action-text { display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 2px; flex: 1; }
+.big-action-title { font-weight: 800; font-size: 16px; line-height: 1.2; }
+.big-action-sub { font-size: 12px; opacity: 0.85; font-weight: 500; line-height: 1.3; }
 
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
@@ -1413,7 +1444,7 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 
       <!-- Typ pohybu - velké karty -->
       <div class="section-label">Typ pohybu pro další skenování</div>
-      <div class="action-cards">
+      <div class="action-cards" style="grid-template-columns:1fr 1fr">
         <button class="action-card active" data-act="+" onclick="setAction('+')">
           <span class="action-card-icon">📥</span>
           <span class="action-card-title">Naskladnit</span>
@@ -1424,12 +1455,16 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
           <span class="action-card-title">Vyskladnit</span>
           <span class="action-card-sub">odebrané etikety</span>
         </button>
-        <button class="action-card" data-act="=" onclick="setAction('=')">
-          <span class="action-card-icon">📊</span>
-          <span class="action-card-title">Inventura</span>
-          <span class="action-card-sub">nastavit stav</span>
-        </button>
       </div>
+
+      <!-- Inventura - velké samostatné tlačítko -->
+      <button class="big-action-btn" onclick="invStart()">
+        <span class="big-action-icon">📊</span>
+        <span class="big-action-text">
+          <span class="big-action-title">Spustit postupnou inventuru</span>
+          <span class="big-action-sub">projdi etikety jednu po druhé, zaznamenej stavy</span>
+        </span>
+      </button>
 
       <!-- Posledních 5 -->
       <div class="section-label">Nedávné pohyby</div>
@@ -1493,8 +1528,11 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 
     <!-- TAB: QR ARCHY -->
     <div class="tab-content" data-tab="qr">
+      <button onclick="switchTab('nast')" style="background:transparent;border:none;color:var(--ll-orange);font-weight:700;font-size:14px;padding:8px 0;cursor:pointer;margin-bottom:8px">
+        ← Zpět do Nastavení
+      </button>
       <div class="card">
-        <div class="card-title">Generování QR nálepek</div>
+        <div class="card-title">🏷️ Generování QR nálepek</div>
         <p style="font-size:13px;color:var(--ll-gray);margin-bottom:12px;line-height:1.5">
           Vyber etikety, pro které potřebuješ vygenerovat QR nálepky. Vytiskni na samolepící A4 archy
           (např. Avery 3×8) a nalep na police nebo krabičky.
@@ -1552,8 +1590,24 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
           <div>Etiket v cache: <strong id="info-etiket">0</strong></div>
           <div>Pohybů: <strong id="info-pohybu">0</strong></div>
           <div>Ve frontě: <strong id="info-fronta">0</strong></div>
-          <div>Verze: <strong>16.3</strong></div>
+          <div>Verze: <strong>16.5</strong></div>
         </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🏷️ Generování QR samolepek</div>
+        <p style="font-size:12px;color:var(--ll-gray);margin-bottom:10px;line-height:1.4">
+          Vyber etikety, vytiskni A4 archy s QR kódy a obrázky. Použiješ jen občas, proto je to skryto v Nastavení.
+        </p>
+        <button class="save-btn" onclick="switchTab('qr')">Otevřít generátor QR →</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔍 Diagnostika dat</div>
+        <p style="font-size:12px;color:var(--ll-gray);margin-bottom:10px;line-height:1.4">
+          Co apka čte ze Sheets. Pokud nějaké pole není načteno správně, zkontroluj pořadí sloupců v listu Etikety.
+        </p>
+        <div id="data-diag" style="font-size:13px"></div>
       </div>
 
       <div class="card">
@@ -1576,9 +1630,6 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
     </button>
     <button class="tab" data-tab="historie" onclick="switchTab('historie')">
       <span class="tab-icon">🕐</span><span>Historie</span>
-    </button>
-    <button class="tab" data-tab="qr" onclick="switchTab('qr')">
-      <span class="tab-icon">🏷️</span><span>QR</span>
     </button>
     <button class="tab" data-tab="objednat" onclick="switchTab('objednat')">
       <span class="tab-icon">🛒</span><span>Objednat</span>
@@ -3308,6 +3359,43 @@ function renderInfo() {
     var dt = new Date(last);
     document.getElementById('sync-info').textContent = 'Poslední sync: ' +
       dt.toLocaleDateString('cs-CZ') + ' ' + dt.toLocaleTimeString('cs-CZ');
+  }
+
+  // Diagnostika dat
+  var diag = document.getElementById('data-diag');
+  if (diag) {
+    var sMin = 0, sObr = 0, sStav = 0, sKat = 0, sTyp = 0;
+    var sampleMin = [];
+    for (var i = 0; i < STATE.etikety.length; i++) {
+      var e = STATE.etikety[i];
+      if (Number(e.minimum) > 0) {
+        sMin++;
+        if (sampleMin.length < 3) sampleMin.push(e.id + '=' + e.minimum);
+      }
+      if (e.obrazek_url) sObr++;
+      if (Number(e.stav) > 0) sStav++;
+      if (e.kategorie) sKat++;
+      if (e.typ) sTyp++;
+    }
+    var minSample = sampleMin.length > 0 ? ' (např. ' + sampleMin.join(', ') + ')' : '';
+    diag.innerHTML =
+      '<div class="diag-row"><span>Etiket celkem</span><strong>' + STATE.etikety.length + '</strong></div>' +
+      '<div class="diag-row"><span>S vyplněným Minimem</span><strong class="' + (sMin === 0 ? 'diag-warn' : '') + '">' + sMin + minSample + '</strong></div>' +
+      '<div class="diag-row"><span>S obrázkem (sloupec M)</span><strong>' + sObr + '</strong></div>' +
+      '<div class="diag-row"><span>Se stavem > 0</span><strong>' + sStav + '</strong></div>' +
+      '<div class="diag-row"><span>S kategorií</span><strong>' + sKat + '</strong></div>' +
+      '<div class="diag-row"><span>S typem (horní/technická)</span><strong>' + sTyp + '</strong></div>';
+
+    if (sMin === 0 && STATE.etikety.length > 0) {
+      diag.innerHTML += '<div class="diag-alert">' +
+        '⚠ <strong>Žádná etiketa nemá vyplněné Minimum.</strong> ' +
+        'Apka čte sloupec <strong>J</strong> (10. sloupec) listu Etikety. ' +
+        'Zkontroluj v Sheets, že:<br>' +
+        '• Hlavička v J1 je <strong>Minimum</strong> (nebo cokoliv jiného - text hlavičky není rozhodující)<br>' +
+        '• V J2:J999 jsou <strong>čísla</strong> (např. 100, 500)<br>' +
+        '• Před sloupcem Minimum není přidaný nebo smazaný sloupec - musí být v pořadí <strong>I=Stav, J=Minimum, K=Poznamka</strong>' +
+      '</div>';
+    }
   }
 }
 
