@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#3B1A0D">
-<title>LL Etikety - inventura v12</title>
+<title>LL Etikety - inventura v13</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1439,7 +1439,7 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
           <button class="filter-select" onclick="qrSelectNone()" style="cursor:pointer;font-weight:700">Nic</button>
         </div>
         <div id="qr-list" class="qr-checkbox-list"></div>
-        <button class="qr-print-btn" onclick="generateQrSheet()">📄 Stáhnout PDF (<span id="qr-count">0</span>)</button>
+        <button class="qr-print-btn" onclick="generateQrSheet()">🖨️ Otevřít tisk (<span id="qr-count">0</span>)</button>
         <div class="qr-pdf-progress" id="qr-progress"></div>
       </div>
     </div>
@@ -1463,7 +1463,7 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
           <div>Etiket v cache: <strong id="info-etiket">0</strong></div>
           <div>Pohybů: <strong id="info-pohybu">0</strong></div>
           <div>Ve frontě: <strong id="info-fronta">0</strong></div>
-          <div>Verze: <strong>12.0</strong></div>
+          <div>Verze: <strong>13.0</strong></div>
         </div>
       </div>
 
@@ -2789,208 +2789,124 @@ function updateQrCount() {
   if (el) el.textContent = n;
 }
 
-function loadImagesViaProxy(urls) {
-  // Filter empty
-  var realUrls = [];
-  for (var i = 0; i < urls.length; i++) {
-    if (urls[i]) realUrls.push(urls[i]);
-  }
-  if (realUrls.length === 0) return Promise.resolve({});
-  if (!STATE.url) return Promise.resolve({});
-
-  // Chunk po 30 - bezpečně v Apps Script fetchAll limit
-  var CHUNK = 30;
-  var chunks = [];
-  for (var c = 0; c < realUrls.length; c += CHUNK) {
-    chunks.push(realUrls.slice(c, c + CHUNK));
-  }
-
-  var allMap = {};
-  var chunkPromises = chunks.map(function (chunk) {
-    return fetch(STATE.url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'getImagesBatch', urls: chunk })
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (d.ok && d.dataUrls) {
-          for (var i = 0; i < chunk.length; i++) {
-            if (d.dataUrls[i]) allMap[chunk[i]] = d.dataUrls[i];
-          }
-        }
-      })
-      .catch(function () { /* silent */ });
-  });
-
-  return Promise.all(chunkPromises).then(function () { return allMap; });
-}
-
 function generateQrSheet() {
   var ids = [];
   for (var k in qrSelected) ids.push(k);
   if (ids.length === 0) { toast('Vyber alespoň jednu etiketu', 'error'); return; }
 
-  if (typeof window.jspdf === 'undefined') { toast('PDF knihovna chybí', 'error'); return; }
-  if (typeof window.qrcode === 'undefined') { toast('QR knihovna chybí', 'error'); return; }
+  if (typeof window.qrcode === 'undefined') { toast('QR knihovna se nenačetla', 'error'); return; }
 
   var progress = document.getElementById('qr-progress');
-  progress.textContent = 'Stahuju obrázky etiket…';
+  progress.textContent = 'Otvírám tiskové okno…';
 
-  // Sesbírej URL obrázků
-  var urls = [];
-  for (var i = 0; i < ids.length; i++) {
-    var et = findEtiketa(ids[i]);
-    urls.push(et && et.obrazek_url ? et.obrazek_url : null);
-  }
-
-  loadImagesViaProxy(urls).then(function (imgMap) {
-    var loaded = 0;
-    for (var k in imgMap) loaded++;
-    progress.textContent = 'Načteno ' + loaded + ' obrázků, generuju PDF…';
-    setTimeout(function () { buildPdfWithImages(ids, imgMap, progress); }, 100);
-  });
-}
-
-function buildPdfWithImages(ids, imgMap, progress) {
   try {
-    var jsPDF = window.jspdf.jsPDF;
-    var doc = new jsPDF({ unit: 'mm', format: 'a4' });
-
-    // Layout 2 sloupce × 5 řádků = 10 samolepek na A4 (větší formát)
-    var COLS = 2, ROWS = 5;
-    var MARGIN = 10;
-    var GAP = 4;
-    var CELL_W = (210 - 2 * MARGIN - (COLS - 1) * GAP) / COLS;
-    var CELL_H = (297 - 2 * MARGIN - (ROWS - 1) * GAP) / ROWS;
-    var IMG_SIZE = Math.min(CELL_H * 0.65, CELL_W * 0.42);
-    var QR_SIZE = IMG_SIZE;
-
     var baseUrl = window.location.origin + window.location.pathname;
 
+    // Vygeneruj QR kódy jako SVG data URI - vejde se inline do HTML
+    var cells = '';
     for (var i = 0; i < ids.length; i++) {
       var e = findEtiketa(ids[i]);
       if (!e) continue;
 
-      var page = Math.floor(i / (COLS * ROWS));
-      var posOnPage = i % (COLS * ROWS);
-      var row = Math.floor(posOnPage / COLS);
-      var col = posOnPage % COLS;
-
-      if (page > 0 && posOnPage === 0) doc.addPage();
-
-      var x = MARGIN + col * (CELL_W + GAP);
-      var y = MARGIN + row * (CELL_H + GAP);
-
-      // Rámeček (čárkovaný pro vystřižení)
-      doc.setDrawColor(200, 200, 200);
-      doc.setLineWidth(0.15);
-      doc.setLineDashPattern([1, 1], 0);
-      doc.rect(x, y, CELL_W, CELL_H);
-      doc.setLineDashPattern([], 0);
-
-      var pad = 4;
-      var topY = y + pad;
-
-      // Obrázek vlevo
-      var imgX = x + pad;
-      var dataUrl = e.obrazek_url && imgMap[e.obrazek_url];
-      if (dataUrl) {
-        try {
-          doc.addImage(dataUrl, 'JPEG', imgX, topY, IMG_SIZE, IMG_SIZE);
-        } catch (errImg) {
-          // Placeholder na fail
-          doc.setFillColor(240, 232, 214);
-          doc.rect(imgX, topY, IMG_SIZE, IMG_SIZE, 'F');
-        }
-      } else {
-        doc.setFillColor(245, 240, 228);
-        doc.rect(imgX, topY, IMG_SIZE, IMG_SIZE, 'F');
-        doc.setFontSize(14);
-        doc.setTextColor(180, 180, 180);
-        doc.text('LL', imgX + IMG_SIZE / 2, topY + IMG_SIZE / 2 + 2, { align: 'center' });
-      }
-
-      // QR vpravo
-      var qrX = x + CELL_W - QR_SIZE - pad;
+      // QR jako PNG data URL (createDataURL je nejspolehlivější)
       var qr = window.qrcode(0, 'M');
       qr.addData(baseUrl + '?id=' + encodeURIComponent(e.id));
       qr.make();
-      doc.addImage(qr.createDataURL(8, 1), 'PNG', qrX, topY, QR_SIZE, QR_SIZE);
+      var qrDataUrl = qr.createDataURL(8, 0);
+      var qrHtml = '<img class="qr-img" src="' + qrDataUrl + '" alt="QR">';
 
-      // Text pod oběma
-      var textY = topY + IMG_SIZE + 6;
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.setTextColor(40, 40, 40);
-      doc.text(normalizeForPdf(e.id), x + CELL_W / 2, textY, { align: 'center' });
+      // Obrázek jako img (Azure se načte bez CORS problému)
+      var imgHtml = e.obrazek_url
+        ? '<img class="img-photo" src="' + esc(e.obrazek_url) + '" alt="">'
+        : '<div class="img-placeholder">LL</div>';
 
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.setTextColor(70, 70, 70);
-      var nazev = normalizeForPdf(e.nazev || '');
-      // Možnost dvou řádků: zkusit zlomit text na ~45 znaků
-      var maxLine = 45;
-      if (nazev.length > maxLine) {
-        // Hledej mezeru kolem půlky
-        var mid = Math.floor(nazev.length / 2);
-        var splitAt = nazev.lastIndexOf(' ', maxLine);
-        if (splitAt < 10) splitAt = nazev.indexOf(' ', mid);
-        if (splitAt > 0 && splitAt < nazev.length - 1) {
-          var line1 = nazev.substring(0, splitAt);
-          var line2 = nazev.substring(splitAt + 1);
-          if (line2.length > maxLine) line2 = line2.substring(0, maxLine - 1) + '...';
-          doc.text(line1, x + CELL_W / 2, textY + 4, { align: 'center' });
-          doc.text(line2, x + CELL_W / 2, textY + 7.5, { align: 'center' });
-        } else {
-          doc.text(nazev.substring(0, maxLine) + '...', x + CELL_W / 2, textY + 4, { align: 'center' });
-        }
-      } else {
-        doc.text(nazev, x + CELL_W / 2, textY + 4, { align: 'center' });
-      }
+      // Název - escapovat, ale ne normalizovat - browser ho ukáže s diakritikou
+      var nazev = e.nazev || '';
+      var maxChars = 60;
+      if (nazev.length > maxChars) nazev = nazev.substring(0, maxChars - 1) + '…';
 
-      if (e.typ) {
-        doc.setFontSize(8);
-        doc.setTextColor(130, 130, 130);
-        doc.text(normalizeForPdf('(' + e.typ + ')'), x + CELL_W / 2, textY + 11.5, { align: 'center' });
-      }
-
-      progress.textContent = 'Generuji ' + (i + 1) + '/' + ids.length + '…';
+      cells +=
+        '<div class="cell">' +
+          '<div class="row-top">' +
+            '<div class="img-wrap">' + imgHtml + '</div>' +
+            '<div class="qr-wrap">' + qrHtml + '</div>' +
+          '</div>' +
+          '<div class="id">' + esc(e.id) + '</div>' +
+          '<div class="nazev">' + esc(nazev) + '</div>' +
+          (e.typ ? '<div class="typ">(' + esc(e.typ) + ')</div>' : '') +
+        '</div>';
     }
 
-    // Stáhnutí - blob + manual click (async chain rozbil user-gesture)
-    var stamp = (new Date()).toISOString().slice(0, 16).replace(/[T:]/g, '-');
-    var filename = 'LL-QR-etikety-' + stamp + '.pdf';
-    var blob = doc.output('blob');
-    var url = URL.createObjectURL(blob);
+    var stamp = (new Date()).toLocaleDateString('cs-CZ');
+    var html =
+'<!DOCTYPE html>\n' +
+'<html lang="cs">\n' +
+'<head>\n' +
+'<meta charset="UTF-8">\n' +
+'<title>LL Etikety - QR samolepky</title>\n' +
+'<style>\n' +
+'@page { size: A4; margin: 8mm; }\n' +
+'* { box-sizing: border-box; margin: 0; padding: 0; }\n' +
+'body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 8mm; }\n' +
+'.toolbar { position: sticky; top: 0; background: white; padding: 12px 16px; margin: -8mm -8mm 8mm; border-bottom: 1px solid #ddd; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }\n' +
+'.toolbar h1 { font-size: 16px; color: #3B1A0D; }\n' +
+'.toolbar small { color: #888; font-size: 12px; }\n' +
+'.btn-print { background: #E85520; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }\n' +
+'.btn-print:hover { background: #C8421A; }\n' +
+'.btn-close { background: #f0e8d6; color: #3B1A0D; border: none; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-left: auto; }\n' +
+'.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; max-width: 194mm; margin: 0 auto; }\n' +
+'.cell { background: white; border: 1px dashed #bbb; padding: 4mm; page-break-inside: avoid; break-inside: avoid; }\n' +
+'.row-top { display: flex; gap: 4mm; align-items: stretch; margin-bottom: 4mm; }\n' +
+'.img-wrap, .qr-wrap { width: 36mm; height: 36mm; flex-shrink: 0; }\n' +
+'.img-wrap { background: #f8f5ec; display: flex; align-items: center; justify-content: center; overflow: hidden; }\n' +
+'.img-photo { width: 100%; height: 100%; object-fit: contain; }\n' +
+'.img-placeholder { color: #aaa; font-size: 18px; font-weight: 800; }\n' +
+'.qr-wrap img.qr-img { width: 100%; height: 100%; display: block; image-rendering: pixelated; }\n' +
+'.id { font-family: "Courier New", monospace; font-size: 13pt; font-weight: 800; color: #222; text-align: center; margin-top: 2mm; }\n' +
+'.nazev { font-size: 9pt; color: #555; text-align: center; margin-top: 1mm; line-height: 1.25; min-height: 22pt; }\n' +
+'.typ { font-size: 8pt; color: #999; text-align: center; margin-top: 1mm; font-style: italic; }\n' +
+'@media print {\n' +
+'  body { background: white; padding: 0; }\n' +
+'  .toolbar { display: none; }\n' +
+'  .grid { gap: 3mm; max-width: 100%; }\n' +
+'  .cell { border: 1px dashed #999; padding: 3mm; }\n' +
+'}\n' +
+'</style>\n' +
+'</head>\n' +
+'<body>\n' +
+'<div class="toolbar">\n' +
+'  <h1>🏷️ LL Etikety – QR samolepky <small>(' + ids.length + ' etiket, ' + stamp + ')</small></h1>\n' +
+'  <button class="btn-print" onclick="window.print()">🖨️ Vytisknout / Uložit jako PDF</button>\n' +
+'  <button class="btn-close" onclick="window.close()">Zavřít</button>\n' +
+'</div>\n' +
+'<div class="grid">' + cells + '</div>\n' +
+'<script>setTimeout(function(){ window.scrollTo(0,0); }, 200);<\/script>\n' +
+'</body>\n' +
+'</html>';
 
-    progress.innerHTML = '✓ PDF připraven (' + ids.length + ' etiket) ' +
-      '<a href="' + url + '" download="' + filename + '" style="display:inline-block;margin-left:10px;padding:8px 16px;background:var(--ll-orange);color:white;border-radius:8px;text-decoration:none;font-weight:800">📥 STÁHNOUT</a>';
+    // Otevři v novém okně
+    var w = window.open('', '_blank');
+    if (!w) {
+      toast('Prohlížeč zablokoval popup. Povol popupy a zkus znovu.', 'error');
+      progress.textContent = '❌ Popup zablokován';
+      return;
+    }
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
 
-    window._lastPdfBlob = blob;
-    window._lastPdfName = filename;
-    toast('PDF připraven, klikni STÁHNOUT', 'success');
-
+    progress.innerHTML = '✓ Otevřeno v novém okně (' + ids.length + ' etiket). Klikni "Vytisknout / Uložit jako PDF".';
+    toast('Otevřeno v novém okně', 'success');
   } catch (err) {
     progress.textContent = '❌ Chyba: ' + err.message;
     toast('Chyba: ' + err.message, 'error');
-    console.error('PDF error:', err);
+    console.error('QR print error:', err);
   }
 }
 
-// Fallback pro mobilní prohlížeče
+// Stará funkce pro PDF přes Apps Script - odstraněna v v13 (nahrazena HTML print)
 function downloadPdfBlob(linkEl) {
-  if (!window._lastPdfBlob) { toast('PDF už není k dispozici, vygeneruj znovu', 'error'); return; }
-  var url = URL.createObjectURL(window._lastPdfBlob);
-  var a = document.createElement('a');
-  a.href = url;
-  a.download = window._lastPdfName || 'LL-QR-etikety.pdf';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(function () {
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, 1000);
+  toast('Funkce odebrána, použij Stáhnout PDF', 'error');
 }
 
 // === SETTINGS ===
