@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#3B1A0D">
-<title>LL Etikety - inventura v5</title>
+<title>LL Etikety - inventura v7</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -62,6 +62,8 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
   font-weight: 700;
   font-size: 12px;
 }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
 .online-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ll-green); display: inline-block; }
 .online-dot.off { background: var(--ll-red); }
 .queue-badge {
@@ -862,9 +864,10 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
       <small id="header-sub">Vestec sklad</small>
     </div>
     <div class="header-right">
+      <span id="sync-indicator" style="display:none;font-size:13px;animation:spin 1s linear infinite">🔄</span>
       <span class="online-dot" id="online-dot"></span>
       <span class="queue-badge" id="queue-badge" style="display:none">0</span>
-      <span class="user-chip" id="user-chip" onclick="logout()">—</span>
+      <span class="user-chip" id="user-chip" onclick="openUserPicker()">—</span>
     </div>
   </div>
 
@@ -998,7 +1001,7 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
           <div>Etiket v cache: <strong id="info-etiket">0</strong></div>
           <div>Pohybů: <strong id="info-pohybu">0</strong></div>
           <div>Ve frontě: <strong id="info-fronta">0</strong></div>
-          <div>Verze: <strong>5.0</strong></div>
+          <div>Verze: <strong>7.0</strong></div>
         </div>
       </div>
 
@@ -1125,29 +1128,67 @@ function init() {
   STATE.fronta = JSON.parse(localStorage.getItem(LS.FRONTA) || '[]');
   STATE.view = localStorage.getItem('ll_et_view') || 'galerie';
 
+  // Default user - pokud není uložený, vytvoř Anonyma
+  if (!STATE.user) {
+    STATE.user = { jmeno: 'Anonym', role: 'host' };
+    localStorage.setItem(LS.USER, JSON.stringify(STATE.user));
+  }
+
   window.addEventListener('online', function () { setOnline(true); processFronta(); });
   window.addEventListener('offline', function () { setOnline(false); });
   setOnline(navigator.onLine);
 
-  renderLoginUsers();
+  // Skip login - rovnou hlavní apka
+  showApp();
 
-  if (STATE.user) {
-    showApp();
+  // Async sync na startu
+  if (STATE.url) {
+    setTimeout(function () {
+      autoFetch();
+      // Po načtení dat zkontroluj URL parametr ?id=
+      setTimeout(handleUrlParams, 1500);
+    }, 300);
   } else {
-    showLogin();
+    // Bez URL ale zkontroluj parametry i tak (pokud máme cache)
+    setTimeout(handleUrlParams, 300);
   }
 
-  // Async sync on start
-  if (STATE.url && STATE.user) {
-    setTimeout(syncNow, 500);
-  }
-
-  // Periodic queue process
+  // Periodic queue process + auto-fetch
   setInterval(function () {
-    if (STATE.online && STATE.fronta.length > 0 && !STATE.syncing) {
-      processFronta();
+    if (STATE.online && !STATE.syncing) {
+      if (STATE.fronta.length > 0) {
+        processFronta();
+      }
+      autoFetch();
     }
-  }, 15000);
+  }, 30000);
+
+  // Force-sync při návratu do apky (focus event)
+  window.addEventListener('focus', function () {
+    if (STATE.online && !STATE.syncing && STATE.url) {
+      autoFetch();
+    }
+  });
+}
+
+function handleUrlParams() {
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var id = params.get('id');
+    if (id) {
+      // Vyčisti URL aby reload neopakoval akci
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+      // Pokud nemáme etikety v cache, počkat na sync
+      if (STATE.etikety.length === 0) {
+        toast('Načítám data, počkej…');
+        setTimeout(function () { openConfirmFor(id); }, 2000);
+      } else {
+        openConfirmFor(id);
+      }
+    }
+  } catch (e) { /* IE může selhat na URLSearchParams */ }
 }
 
 function setOnline(v) {
@@ -1200,11 +1241,75 @@ function doLogin(user) {
   showApp();
 }
 
+function openUserPicker() {
+  var users = STATE.uzivatele && STATE.uzivatele.length > 0 ? STATE.uzivatele.slice() : [];
+  // Vždy dej možnost "Anonym"
+  var hasAnon = false;
+  for (var i = 0; i < users.length; i++) {
+    if (users[i].jmeno === 'Anonym') { hasAnon = true; break; }
+  }
+  if (!hasAnon) users.unshift({ jmeno: 'Anonym', role: 'host' });
+
+  if (users.length === 0) {
+    var newName = prompt('Zadej své jméno:', STATE.user ? STATE.user.jmeno : '');
+    if (newName && newName.trim()) {
+      STATE.user = { jmeno: newName.trim(), role: 'skladnik' };
+      localStorage.setItem(LS.USER, JSON.stringify(STATE.user));
+      document.getElementById('user-chip').textContent = STATE.user.jmeno;
+    }
+    return;
+  }
+
+  // Modal dialog
+  var html = '<div style="position:fixed;inset:0;background:rgba(59,26,13,0.7);z-index:300;display:flex;align-items:flex-end;justify-content:center" onclick="closeUserPicker(event)">' +
+    '<div style="background:white;width:100%;max-width:720px;border-radius:20px 20px 0 0;padding:20px;animation:slideUp 0.2s ease-out" onclick="event.stopPropagation()">' +
+    '<div style="font-size:13px;color:var(--ll-gray);text-transform:uppercase;letter-spacing:0.5px;font-weight:700;margin-bottom:12px">Kdo jsi?</div>';
+  for (var j = 0; j < users.length; j++) {
+    var u = users[j];
+    var isActive = STATE.user && STATE.user.jmeno === u.jmeno;
+    html += '<button onclick="pickUser(\'' + esc(u.jmeno).replace(/'/g, "\\'") + '\',\'' + esc(u.role || 'skladnik') + '\')" ' +
+      'style="width:100%;text-align:left;padding:14px 16px;margin-bottom:6px;border-radius:12px;' +
+      'background:' + (isActive ? 'var(--ll-orange)' : 'var(--ll-cream)') + ';' +
+      'color:' + (isActive ? 'white' : 'var(--ll-brown)') + ';' +
+      'font-size:15px;font-weight:700;display:flex;justify-content:space-between;align-items:center">' +
+      '<span>' + esc(u.jmeno) + '</span>' +
+      '<span style="font-size:11px;opacity:0.7;text-transform:uppercase;letter-spacing:0.5px">' + esc(u.role || 'skladnik') + '</span>' +
+      '</button>';
+  }
+  html += '<button onclick="newUserName()" style="width:100%;padding:12px;margin-top:6px;border:2px dashed var(--ll-brown);border-radius:12px;background:transparent;font-size:14px;font-weight:600;color:var(--ll-brown)">+ Nové jméno</button>';
+  html += '<button onclick="closeUserPicker()" style="width:100%;padding:12px;margin-top:8px;background:var(--ll-cream);border-radius:12px;font-weight:700;font-size:14px;color:var(--ll-brown)">Zavřít</button>';
+  html += '</div></div>';
+
+  var modal = document.createElement('div');
+  modal.id = 'user-picker-modal';
+  modal.innerHTML = html;
+  document.body.appendChild(modal);
+}
+
+function closeUserPicker(ev) {
+  if (ev && ev.target !== ev.currentTarget) return;
+  var m = document.getElementById('user-picker-modal');
+  if (m) m.remove();
+}
+
+function pickUser(jmeno, role) {
+  STATE.user = { jmeno: jmeno, role: role || 'skladnik' };
+  localStorage.setItem(LS.USER, JSON.stringify(STATE.user));
+  document.getElementById('user-chip').textContent = jmeno;
+  closeUserPicker();
+  toast('Vybráno: ' + jmeno, 'success');
+}
+
+function newUserName() {
+  var name = prompt('Zadej své jméno:');
+  if (name && name.trim()) {
+    pickUser(name.trim(), 'skladnik');
+  }
+}
+
 function logout() {
-  if (!confirm('Odhlásit ' + STATE.user.jmeno + '?')) return;
-  STATE.user = null;
-  localStorage.removeItem(LS.USER);
-  showLogin();
+  // Zachováno pro zpětnou kompatibilitu - místo logout otevíráme picker
+  openUserPicker();
 }
 
 function showLogin() {
@@ -1244,6 +1349,11 @@ function switchTab(name) {
   if (name === 'qr') renderQrList();
   if (name === 'nast') renderInfo();
   if (name === 'prehled') renderPrehled();
+
+  // Při přepnutí na data tab vyvolat tichý sync
+  if (name === 'stav' || name === 'historie' || name === 'prehled') {
+    autoFetch();
+  }
 }
 
 // === RENDER ALL ===
@@ -1568,6 +1678,65 @@ function fetchAll(cb) {
       toast('Chyba spojení: ' + e.message, 'error');
       cb(false);
     });
+}
+
+// Tichý sync na pozadí - bez toastů, ale aktualizuje data + UI
+function autoFetch() {
+  if (!STATE.url || !STATE.user || STATE.syncing) return;
+  if (!STATE.online) return;
+
+  // Označ tichý sync indikátor v záhlaví
+  setSyncIndicator(true);
+
+  fetch(STATE.url + '?action=getAll&t=' + Date.now())
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      setSyncIndicator(false);
+      if (!d.ok) return;
+
+      var prevPohybCount = STATE.pohyby.length;
+      STATE.etikety = d.etikety || [];
+      STATE.pohyby = d.pohyby || [];
+      STATE.uzivatele = d.uzivatele || [];
+      saveLocal();
+      localStorage.setItem(LS.LAST_SYNC, new Date().toISOString());
+
+      // Re-render aktuálně otevřené záložky
+      var activeTab = document.querySelector('.tab.active');
+      if (activeTab) {
+        var t = activeTab.getAttribute('data-tab');
+        if (t === 'scan') renderRecentPohyby();
+        if (t === 'stav') renderStav();
+        if (t === 'historie') renderHistorie();
+        if (t === 'prehled') renderPrehled();
+        if (t === 'nast') renderInfo();
+      }
+
+      // Info do hlavičky - bez toastu, jen update času
+      var newCount = STATE.pohyby.length - prevPohybCount;
+      if (newCount > 0) {
+        // Subtle indikátor že přišly nové pohyby
+        flashHeader();
+      }
+    })
+    .catch(function () {
+      setSyncIndicator(false);
+      // Tichá chyba - žádný toast (neotravuj uživatele)
+    });
+}
+
+function setSyncIndicator(on) {
+  var el = document.getElementById('sync-indicator');
+  if (el) el.style.display = on ? 'inline-block' : 'none';
+}
+
+function flashHeader() {
+  var h = document.querySelector('.header');
+  if (!h) return;
+  h.style.transition = 'background 0.3s';
+  var orig = h.style.background;
+  h.style.background = 'var(--ll-orange)';
+  setTimeout(function () { h.style.background = orig; }, 400);
 }
 
 function sendPohyb(pohyb) {
@@ -2149,10 +2318,13 @@ function generateQrSheet() {
       doc.rect(x, y, CELL_W, CELL_H);
 
       // QR kód - SYNC generování pomocí qrcode-generator
-      var qr = window.qrcode(0, 'M'); // typeNumber 0 = auto, M = medium error correction
-      qr.addData(e.id);
+      // QR obsahuje plnou URL aby šel naskenovat i nativním fotoaparátem
+      var baseUrl = window.location.origin + window.location.pathname;
+      var qrPayload = baseUrl + '?id=' + encodeURIComponent(e.id);
+      var qr = window.qrcode(0, 'M');
+      qr.addData(qrPayload);
       qr.make();
-      var qrDataUrl = qr.createDataURL(8, 1); // cellSize 8px, margin 1
+      var qrDataUrl = qr.createDataURL(8, 1);
 
       var qrX = x + (CELL_W - QR_SIZE) / 2;
       var qrY = y + 2;
@@ -2163,20 +2335,20 @@ function generateQrSheet() {
       doc.setFontSize(9);
       doc.setTextColor(40, 40, 40);
       var textY = qrY + QR_SIZE + 3;
-      doc.text(e.id, x + CELL_W / 2, textY, { align: 'center' });
+      doc.text(normalizeForPdf(e.id), x + CELL_W / 2, textY, { align: 'center' });
 
       // Název (malý)
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(6.5);
+      doc.setFontSize(7);
       doc.setTextColor(100, 100, 100);
-      var maxChars = 28;
+      var maxChars = 32;
       var nazev = e.nazev || '';
-      if (nazev.length > maxChars) nazev = nazev.substring(0, maxChars - 1) + '…';
-      doc.text(nazev, x + CELL_W / 2, textY + 3, { align: 'center' });
+      if (nazev.length > maxChars) nazev = nazev.substring(0, maxChars - 1) + '...';
+      doc.text(normalizeForPdf(nazev), x + CELL_W / 2, textY + 3, { align: 'center' });
 
       if (e.typ) {
-        doc.setFontSize(5.5);
-        doc.text('(' + e.typ + ')', x + CELL_W / 2, textY + 5.5, { align: 'center' });
+        doc.setFontSize(6);
+        doc.text(normalizeForPdf('(' + e.typ + ')'), x + CELL_W / 2, textY + 5.5, { align: 'center' });
       }
 
       progress.textContent = 'Generuji ' + (i + 1) + '/' + ids.length + '…';
@@ -2263,8 +2435,30 @@ function resetAll() {
 }
 
 // === HELPERS ===
+function normalizeForPdf(s) {
+  if (!s) return '';
+  var map = {
+    'á':'a','é':'e','í':'i','ó':'o','ú':'u','ů':'u','ý':'y',
+    'č':'c','ď':'d','ě':'e','ň':'n','ř':'r','š':'s','ť':'t','ž':'z',
+    'Á':'A','É':'E','Í':'I','Ó':'O','Ú':'U','Ů':'U','Ý':'Y',
+    'Č':'C','Ď':'D','Ě':'E','Ň':'N','Ř':'R','Š':'S','Ť':'T','Ž':'Z'
+  };
+  return String(s).replace(/[áéíóúůýčďěňřšťžÁÉÍÓÚŮÝČĎĚŇŘŠŤŽ]/g, function (c) {
+    return map[c] || c;
+  });
+}
+
 function findEtiketa(code) {
   var c = String(code).trim();
+
+  // Pokud je to URL s ?id= parametrem, vytáhni ID
+  if (c.indexOf('?id=') > -1 || c.indexOf('&id=') > -1) {
+    try {
+      var m = c.match(/[?&]id=([^&]+)/);
+      if (m) c = decodeURIComponent(m[1]);
+    } catch (e) {}
+  }
+
   for (var i = 0; i < STATE.etikety.length; i++) {
     var e = STATE.etikety[i];
     if (e.id === c || e.ean === c || String(e.kod_produktu) === c) return e;
