@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#3B1A0D">
-<title>LL Etikety - inventura v10</title>
+<title>LL Etikety - inventura v11</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1463,7 +1463,7 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
           <div>Etiket v cache: <strong id="info-etiket">0</strong></div>
           <div>Pohybů: <strong id="info-pohybu">0</strong></div>
           <div>Ve frontě: <strong id="info-fronta">0</strong></div>
-          <div>Verze: <strong>10.0</strong></div>
+          <div>Verze: <strong>11.0</strong></div>
         </div>
       </div>
 
@@ -2420,7 +2420,7 @@ function renderGalerie(list, rows) {
     else if (e.minimum > 0 && e.stav < e.minimum) { cls += ' low'; badgeCls = 'low'; }
 
     var imgHtml = e.obrazek_url
-      ? '<img class="gal-img" src="' + esc(e.obrazek_url) + '" loading="lazy" alt="" onerror="this.outerHTML=\'<div class=&quot;gal-img-placeholder&quot;>🏷️</div>\'">'
+      ? '<img class="gal-img" src="' + esc(e.obrazek_url) + '" loading="lazy" alt="" onload="fitImg(this)" onerror="this.outerHTML=\'<div class=&quot;gal-img-placeholder&quot;>🏷️</div>\'">'
       : '<div class="gal-img-placeholder">🏷️</div>';
 
     html += '<div class="' + cls + '" onclick="openConfirmFor(\'' + e.id + '\')">' +
@@ -2447,7 +2447,7 @@ function renderSeznam(list, rows) {
     if (e2.stav <= 0) cls += ' zero';
     else if (e2.minimum > 0 && e2.stav < e2.minimum) cls += ' low';
     var imgHtml = e2.obrazek_url
-      ? '<img class="et-thumb" src="' + esc(e2.obrazek_url) + '" loading="lazy" alt="" onerror="this.outerHTML=\'<div class=&quot;et-thumb-placeholder&quot;>🏷️</div>\'">'
+      ? '<img class="et-thumb" src="' + esc(e2.obrazek_url) + '" loading="lazy" alt="" onload="fitImg(this)" onerror="this.outerHTML=\'<div class=&quot;et-thumb-placeholder&quot;>🏷️</div>\'">'
       : '<div class="et-thumb-placeholder">🏷️</div>';
     html += '<div class="' + cls + '" onclick="openConfirmFor(\'' + e2.id + '\')">' +
       imgHtml +
@@ -2618,7 +2618,7 @@ function renderPrehled() {
       var pp = problemy[l].et;
       var cls = pp.stav <= 0 ? 'zero' : 'low';
       var imgHtml = pp.obrazek_url
-        ? '<img class="dash-top-img" src="' + esc(pp.obrazek_url) + '" loading="lazy" alt="" onerror="this.outerHTML=\'<div class=&quot;dash-top-img-ph&quot;>🏷️</div>\'">'
+        ? '<img class="dash-top-img" src="' + esc(pp.obrazek_url) + '" loading="lazy" alt="" onload="fitImg(this)" onerror="this.outerHTML=\'<div class=&quot;dash-top-img-ph&quot;>🏷️</div>\'">'
         : '<div class="dash-top-img-ph">🏷️</div>';
       html += '<div class="dash-top-row ' + cls + '" onclick="openConfirmFor(\'' + pp.id + '\')">' +
         imgHtml +
@@ -2659,7 +2659,7 @@ function renderPrehled() {
       var cc = consumedArr[n];
       var et2 = findEtiketa(cc.id);
       var imgHtml2 = (et2 && et2.obrazek_url)
-        ? '<img class="dash-top-img" src="' + esc(et2.obrazek_url) + '" loading="lazy" alt="" onerror="this.outerHTML=\'<div class=&quot;dash-top-img-ph&quot;>🏷️</div>\'">'
+        ? '<img class="dash-top-img" src="' + esc(et2.obrazek_url) + '" loading="lazy" alt="" onload="fitImg(this)" onerror="this.outerHTML=\'<div class=&quot;dash-top-img-ph&quot;>🏷️</div>\'">'
         : '<div class="dash-top-img-ph">🏷️</div>';
       html += '<div class="dash-top-row" onclick="openConfirmFor(\'' + cc.id + '\')">' +
         imgHtml2 +
@@ -2995,6 +2995,18 @@ function esc(s) {
   if (s == null) return '';
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// Smart pozicování obrázků: pásky/úzké → center, normální → top left
+function fitImg(img) {
+  if (!img || !img.naturalWidth || !img.naturalHeight) return;
+  var ratio = img.naturalWidth / img.naturalHeight;
+  // Pásky (široké) - ratio > 2.2 nebo úzké výškové < 0.45 → centrovat
+  if (ratio > 2.2 || ratio < 0.45) {
+    img.style.objectPosition = 'center center';
+  } else {
+    img.style.objectPosition = 'top left';
+  }
 }
 
 // === POSTUPNÁ INVENTURA ===
