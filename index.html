@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#3B1A0D">
-<title>LL Etikety - inventura v16.1</title>
+<title>LL Etikety - inventura v16.2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -226,6 +226,29 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
   font-weight: 700;
   font-size: 12px;
 }
+/* === KATEGORIE KARTY (Přehled) === */
+.kat-card { background: white; padding: 12px 14px; border-radius: 12px; margin-bottom: 8px; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; border: 1px solid transparent; }
+.kat-card:active { transform: scale(0.98); }
+.kat-card:hover { border-color: var(--ll-cream-dark); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.kat-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; gap: 8px; }
+.kat-name { font-weight: 700; color: var(--ll-dark); font-size: 14px; line-height: 1.2; }
+.kat-count { color: var(--ll-gray); font-weight: 500; font-size: 13px; }
+.kat-ks { color: var(--ll-gray); font-size: 12px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.kat-bar { display: flex; height: 8px; background: var(--ll-cream); border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+.kat-seg { height: 100%; transition: width 0.3s; }
+.kat-seg.seg-ok { background: #6B7A50; }
+.kat-seg.seg-low { background: #E85520; }
+.kat-seg.seg-zero { background: #C0392B; }
+.kat-stats { display: flex; flex-wrap: wrap; gap: 6px 10px; font-size: 11px; color: var(--ll-gray); }
+.kat-stat { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; }
+.kat-stat .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.kat-stat .dot.ok { background: #6B7A50; }
+.kat-stat .dot.low { background: #E85520; }
+.kat-stat .dot.zero { background: #C0392B; }
+.kat-stat.ok-chip { color: #4d5a37; }
+.kat-stat.low-chip { color: #E85520; }
+.kat-stat.zero-chip { color: #C0392B; }
+
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 /* === OBJEDNAT TAB === */
@@ -1522,7 +1545,7 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
           <div>Etiket v cache: <strong id="info-etiket">0</strong></div>
           <div>Pohybů: <strong id="info-pohybu">0</strong></div>
           <div>Ve frontě: <strong id="info-fronta">0</strong></div>
-          <div>Verze: <strong>16.1</strong></div>
+          <div>Verze: <strong>16.2</strong></div>
         </div>
       </div>
 
@@ -2762,26 +2785,45 @@ function renderPrehled() {
 
   if (katArr.length > 0) {
     html += '<div class="dash-section-title"><span class="dash-section-icon">📂</span>Podle kategorie</div>';
-    var maxKs = 1;
-    for (var y = 0; y < katArr.length; y++) if (katArr[y].ks > maxKs) maxKs = katArr[y].ks;
 
     for (var z = 0; z < katArr.length; z++) {
       var kat = katArr[z];
-      var pct = Math.min(100, (kat.ks / maxKs) * 100);
-      var barCls = '';
-      if (kat.zero > 0) barCls = 'warning';
-      if (kat.low > kat.celkem * 0.3) barCls = 'danger';
-      html += '<div class="dash-cat-row">' +
-        '<div class="dash-cat-name">' + esc(kat.name) + ' <span style="color:var(--ll-gray);font-weight:500">(' + kat.celkem + ')</span></div>' +
-        '<div class="dash-cat-bar"><div class="dash-cat-bar-fill ' + barCls + '" style="width:' + pct + '%"></div></div>' +
-        '<div class="dash-cat-stats">' + kat.ks + ' ks' +
-          (kat.zero > 0 ? '<br><span style="color:var(--ll-orange);font-size:10px">' + kat.zero + ' nula</span>' : '') +
+      var ok = kat.celkem - kat.zero - kat.low;
+      var okPct = (ok / kat.celkem) * 100;
+      var lowPct = (kat.low / kat.celkem) * 100;
+      var zeroPct = (kat.zero / kat.celkem) * 100;
+
+      html += '<div class="kat-card" onclick="goToKategorie(\'' + esc(kat.name) + '\')">' +
+        '<div class="kat-head">' +
+          '<div class="kat-name">' + esc(kat.name) + ' <span class="kat-count">(' + kat.celkem + ')</span></div>' +
+          '<div class="kat-ks">' + kat.ks.toLocaleString('cs-CZ') + ' ks</div>' +
+        '</div>' +
+        '<div class="kat-bar">' +
+          (okPct > 0 ? '<div class="kat-seg seg-ok" style="width:' + okPct + '%"></div>' : '') +
+          (lowPct > 0 ? '<div class="kat-seg seg-low" style="width:' + lowPct + '%"></div>' : '') +
+          (zeroPct > 0 ? '<div class="kat-seg seg-zero" style="width:' + zeroPct + '%"></div>' : '') +
+        '</div>' +
+        '<div class="kat-stats">' +
+          '<span class="kat-stat ok-chip"><span class="dot ok"></span>' + ok + ' v pořádku</span>' +
+          (kat.low > 0 ? '<span class="kat-stat low-chip"><span class="dot low"></span>' + kat.low + ' pod min</span>' : '') +
+          (kat.zero > 0 ? '<span class="kat-stat zero-chip"><span class="dot zero"></span>' + kat.zero + ' prázdné</span>' : '') +
         '</div>' +
       '</div>';
     }
   }
 
   box.innerHTML = html;
+}
+
+// Klik na kategorii v dashboardu → Stav tab s filtrem
+function goToKategorie(katName) {
+  var sel = document.getElementById('stav-filter');
+  if (sel) {
+    var realVal = katName === '(bez kategorie)' ? '' : katName;
+    sel.value = realVal;
+  }
+  switchTab('stav');
+  setTimeout(function () { renderStav(); }, 50);
 }
 
 
