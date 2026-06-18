@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#3B1A0D">
-<title>LL Etikety - inventura v7</title>
+<title>LL Etikety - inventura v9</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -36,6 +36,170 @@ html, body {
 }
 button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
 input, select, textarea { font-family: inherit; font-size: 16px; }
+
+/* === HOMEPAGE V8 === */
+.home-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.home-stat {
+  background: white;
+  padding: 10px 8px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(59,26,13,0.05);
+}
+.home-stat-num {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ll-brown);
+  line-height: 1;
+}
+.home-stat-label {
+  font-size: 10px;
+  color: var(--ll-gray);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-top: 4px;
+}
+.home-stat.warn .home-stat-num { color: var(--ll-orange); }
+.home-stat.danger .home-stat-num { color: var(--ll-red); }
+
+.scan-hero {
+  width: 100%;
+  background: linear-gradient(135deg, var(--ll-orange) 0%, #C8421A 100%);
+  color: white;
+  padding: 24px 22px;
+  border-radius: 20px;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  box-shadow: 0 6px 20px rgba(232,85,32,0.35);
+  margin-bottom: 14px;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.scan-hero:active {
+  transform: translateY(2px);
+  box-shadow: 0 3px 12px rgba(232,85,32,0.4);
+}
+.scan-hero-icon {
+  font-size: 44px;
+  line-height: 1;
+}
+.scan-hero-text {
+  text-align: left;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.scan-hero-text strong {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+.scan-hero-text small {
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.alt-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.alt-btn {
+  background: white;
+  color: var(--ll-brown);
+  padding: 14px 10px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 1px 2px rgba(59,26,13,0.06);
+  transition: transform 0.1s;
+}
+.alt-btn:active { transform: scale(0.97); }
+.alt-btn-icon { font-size: 18px; }
+
+.section-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ll-gray);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 6px 4px 10px;
+}
+
+.action-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.action-card {
+  background: white;
+  border-radius: 14px;
+  padding: 14px 6px 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 2px solid transparent;
+  transition: all 0.15s;
+  box-shadow: 0 1px 2px rgba(59,26,13,0.06);
+}
+.action-card-icon {
+  font-size: 26px;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+.action-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ll-brown);
+}
+.action-card-sub {
+  font-size: 10px;
+  color: var(--ll-gray);
+  font-weight: 500;
+}
+
+.action-card.active[data-act="+"] {
+  background: linear-gradient(135deg, var(--ll-green) 0%, #1F7A3C 100%);
+  border-color: var(--ll-green);
+}
+.action-card.active[data-act="-"] {
+  background: linear-gradient(135deg, var(--ll-orange) 0%, #C8421A 100%);
+  border-color: var(--ll-orange);
+}
+.action-card.active[data-act="="] {
+  background: linear-gradient(135deg, var(--ll-brown) 0%, #2A1208 100%);
+  border-color: var(--ll-brown);
+}
+.action-card.active .action-card-title,
+.action-card.active .action-card-sub {
+  color: white;
+}
+.action-card.active .action-card-sub {
+  opacity: 0.85;
+}
+
+.recent-box {
+  background: white;
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 1px 2px rgba(59,26,13,0.05);
+}
 
 /* === LAYOUT === */
 .app { max-width: 720px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; background: var(--ll-cream); }
@@ -653,6 +817,279 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
+/* === INVENTURA MODAL === */
+.inv-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--ll-cream);
+  z-index: 250;
+  display: none;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.inv-overlay.active { display: flex; }
+
+.inv-header {
+  background: var(--ll-brown);
+  color: var(--ll-cream);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.inv-title {
+  font-size: 15px;
+  font-weight: 800;
+}
+.inv-progress-text {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.9;
+}
+.inv-close {
+  background: rgba(255,255,255,0.15);
+  color: white;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.inv-progress-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.2);
+  overflow: hidden;
+}
+.inv-progress-fill {
+  height: 100%;
+  background: var(--ll-orange);
+  transition: width 0.3s;
+}
+
+.inv-body {
+  padding: 18px;
+  flex: 1;
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.inv-img-wrap {
+  width: 100%;
+  background: white;
+  border-radius: 16px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  max-height: 320px;
+  overflow: hidden;
+  border: 1px solid var(--ll-cream-dark);
+}
+.inv-img {
+  max-width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+}
+.inv-img-empty {
+  font-size: 60px;
+  color: var(--ll-gray);
+  opacity: 0.4;
+}
+
+.inv-id {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--ll-gray);
+  font-weight: 700;
+}
+.inv-nazev {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--ll-brown);
+  margin-top: 4px;
+  line-height: 1.3;
+}
+.inv-meta {
+  font-size: 12px;
+  color: var(--ll-gray);
+  margin-top: 6px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.inv-meta-chip {
+  background: var(--ll-cream-dark);
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.inv-current {
+  background: white;
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin: 16px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-left: 4px solid var(--ll-olive);
+}
+.inv-current-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ll-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.inv-current-val {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--ll-brown);
+  line-height: 1;
+}
+
+.inv-input-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ll-gray);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.inv-actions-primary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 16px;
+}
+.inv-btn {
+  padding: 16px 8px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 800;
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: transform 0.1s;
+}
+.inv-btn:active { transform: scale(0.97); }
+.inv-btn-icon { font-size: 18px; margin-bottom: 2px; }
+.inv-btn-sub { font-size: 10px; font-weight: 500; opacity: 0.8; text-transform: none; letter-spacing: 0; }
+.inv-btn.primary { background: var(--ll-orange); color: white; }
+.inv-btn.same { background: var(--ll-green); color: white; }
+
+.inv-actions-secondary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+.inv-btn.skip { background: var(--ll-cream-dark); color: var(--ll-brown); }
+.inv-btn.back { background: white; color: var(--ll-brown); border: 1px solid var(--ll-cream-dark); }
+
+/* === INVENTURA SETUP === */
+.inv-setup-card {
+  background: white;
+  padding: 18px;
+  border-radius: 14px;
+  margin-bottom: 14px;
+}
+.inv-filter-group { margin-bottom: 14px; }
+.inv-filter-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ll-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+}
+.inv-filter-options { display: flex; flex-wrap: wrap; gap: 6px; }
+.inv-filter-chip {
+  padding: 8px 14px;
+  background: var(--ll-cream);
+  color: var(--ll-brown);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+}
+.inv-filter-chip.active {
+  background: var(--ll-brown);
+  color: var(--ll-cream);
+}
+
+.inv-start-btn {
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(135deg, var(--ll-orange) 0%, #C8421A 100%);
+  color: white;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 14px rgba(232,85,32,0.3);
+}
+
+/* === INVENTURA SUMMARY === */
+.inv-sum-card {
+  background: white;
+  padding: 18px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.inv-sum-num {
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--ll-brown);
+  line-height: 1;
+}
+.inv-sum-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ll-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 6px;
+}
+
+.inv-diff-row {
+  background: white;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.inv-diff-arrow {
+  font-size: 18px;
+  font-weight: 800;
+  min-width: 60px;
+  text-align: center;
+}
+.inv-diff-arrow.up { color: var(--ll-green); }
+.inv-diff-arrow.down { color: var(--ll-red); }
+
+.inv-resume-card {
+  background: linear-gradient(135deg, #FFF6F0 0%, #FFEDDC 100%);
+  border: 1px solid var(--ll-orange);
+  padding: 14px;
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+
 /* === OBRAZKY ETIKET === */
 .et-thumb {
   width: 44px; height: 44px;
@@ -875,45 +1312,67 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 
     <!-- TAB: SKENOVAT -->
     <div class="tab-content active" data-tab="scan">
-      <div class="card">
-        <div class="card-title">Typ pohybu</div>
-        <div class="action-row">
-          <button class="action-btn active" data-act="+" onclick="setAction('+')">
-            <span class="action-symbol">+</span>
-            <span>Naskladnit</span>
-          </button>
-          <button class="action-btn" data-act="-" onclick="setAction('-')">
-            <span class="action-symbol">−</span>
-            <span>Vyskladnit</span>
-          </button>
-          <button class="action-btn" data-act="=" onclick="setAction('=')">
-            <span class="action-symbol">=</span>
-            <span>Inventura</span>
-          </button>
-        </div>
 
-        <button class="scan-btn" onclick="startScanner()">
-          <span class="scan-btn-icon">📷</span>
-          <span>Spustit skener</span>
+      <!-- Mini stats -->
+      <div class="home-stats" id="home-stats"></div>
+
+      <!-- Velký scan button -->
+      <button class="scan-hero" onclick="startScanner()">
+        <span class="scan-hero-icon">📷</span>
+        <span class="scan-hero-text">
+          <strong>Naskenovat</strong>
+          <small>QR kód / EAN</small>
+        </span>
+      </button>
+
+      <div id="scanner-area">
+        <div id="reader"></div>
+        <button class="scanner-stop" onclick="stopScanner()">✕ Zavřít skener</button>
+      </div>
+
+      <!-- Sekundární akce -->
+      <div class="alt-row">
+        <button class="alt-btn" onclick="goToGalerie()">
+          <span class="alt-btn-icon">🖼️</span>
+          <span>Galerie</span>
         </button>
-
-        <div id="scanner-area">
-          <div id="reader"></div>
-          <button class="scanner-stop" onclick="stopScanner()">✕ Zavřít skener</button>
-        </div>
-
-        <button class="manual-btn" onclick="goToGalerie()">🖼️ Vybrat z galerie</button>
+        <button class="alt-btn" onclick="openManualSelect()">
+          <span class="alt-btn-icon">🔍</span>
+          <span>Hledat</span>
+        </button>
       </div>
 
-      <div class="card">
-        <div class="card-title">Posledních 5 pohybů</div>
-        <div id="recent-pohyby"></div>
+      <!-- Typ pohybu - velké karty -->
+      <div class="section-label">Typ pohybu pro další skenování</div>
+      <div class="action-cards">
+        <button class="action-card active" data-act="+" onclick="setAction('+')">
+          <span class="action-card-icon">📥</span>
+          <span class="action-card-title">Naskladnit</span>
+          <span class="action-card-sub">přijaté etikety</span>
+        </button>
+        <button class="action-card" data-act="-" onclick="setAction('-')">
+          <span class="action-card-icon">📤</span>
+          <span class="action-card-title">Vyskladnit</span>
+          <span class="action-card-sub">odebrané etikety</span>
+        </button>
+        <button class="action-card" data-act="=" onclick="setAction('=')">
+          <span class="action-card-icon">📊</span>
+          <span class="action-card-title">Inventura</span>
+          <span class="action-card-sub">nastavit stav</span>
+        </button>
       </div>
+
+      <!-- Posledních 5 -->
+      <div class="section-label">Nedávné pohyby</div>
+      <div id="recent-pohyby" class="recent-box"></div>
     </div>
 
     <!-- TAB: PREHLED -->
     <div class="tab-content" data-tab="prehled">
       <div id="prehled-content"></div>
+      <button class="inv-start-btn" onclick="invStart()" style="margin-top:14px">
+        📊 Spustit postupnou inventuru
+      </button>
     </div>
 
     <!-- TAB: STAV -->
@@ -1001,7 +1460,7 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
           <div>Etiket v cache: <strong id="info-etiket">0</strong></div>
           <div>Pohybů: <strong id="info-pohybu">0</strong></div>
           <div>Ve frontě: <strong id="info-fronta">0</strong></div>
-          <div>Verze: <strong>7.0</strong></div>
+          <div>Verze: <strong>9.0</strong></div>
         </div>
       </div>
 
@@ -1035,6 +1494,21 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
   </div>
 </div>
 
+<!-- INVENTURA OVERLAY -->
+<div class="inv-overlay" id="inv-overlay">
+  <div class="inv-header">
+    <div>
+      <div class="inv-title" id="inv-title">Postupná inventura</div>
+      <div class="inv-progress-text" id="inv-progress">0 / 0</div>
+    </div>
+    <button class="inv-close" onclick="invClose()">✕</button>
+  </div>
+  <div class="inv-progress-bar">
+    <div class="inv-progress-fill" id="inv-progress-fill" style="width:0%"></div>
+  </div>
+  <div class="inv-body" id="inv-body"></div>
+</div>
+
 <!-- CONFIRM OVERLAY -->
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-sheet">
@@ -1064,11 +1538,11 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
     </div>
 
     <div class="qty-quick" id="conf-qty-quick">
-      <button class="qty-quick-btn" onclick="addQty(1)">+1</button>
-      <button class="qty-quick-btn" onclick="addQty(5)">+5</button>
-      <button class="qty-quick-btn" onclick="addQty(10)">+10</button>
       <button class="qty-quick-btn" onclick="addQty(50)">+50</button>
       <button class="qty-quick-btn" onclick="addQty(100)">+100</button>
+      <button class="qty-quick-btn" onclick="addQty(500)">+500</button>
+      <button class="qty-quick-btn" onclick="addQty(1000)">+1k</button>
+      <button class="qty-quick-btn" onclick="addQty(2000)">+2k</button>
     </div>
 
     <input type="text" class="note-input" id="conf-note" placeholder="Poznámka (volitelná)…">
@@ -1358,11 +1832,52 @@ function switchTab(name) {
 
 // === RENDER ALL ===
 function renderAll() {
+  renderHomeStats();
   renderRecentPohyby();
   renderStav();
   renderHistorie();
   populateFilters();
   updateQueueBadge();
+}
+
+function renderHomeStats() {
+  var box = document.getElementById('home-stats');
+  if (!box) return;
+  if (STATE.etikety.length === 0) {
+    box.innerHTML = '';
+    return;
+  }
+
+  var celkem = STATE.etikety.length;
+  var prazdne = 0;
+  var podMin = 0;
+  for (var i = 0; i < STATE.etikety.length; i++) {
+    var e = STATE.etikety[i];
+    if (e.stav <= 0) prazdne++;
+    else if (e.minimum > 0 && e.stav < e.minimum) podMin++;
+  }
+
+  // Pohyby dnes
+  var dnesStart = new Date();
+  dnesStart.setHours(0, 0, 0, 0);
+  var pohybyDnes = 0;
+  for (var j = 0; j < STATE.pohyby.length; j++) {
+    if (new Date(STATE.pohyby[j].timestamp).getTime() >= dnesStart.getTime()) pohybyDnes++;
+  }
+
+  box.innerHTML =
+    '<div class="home-stat" onclick="switchTab(\'stav\')">' +
+      '<div class="home-stat-num">' + celkem + '</div>' +
+      '<div class="home-stat-label">Etiket</div>' +
+    '</div>' +
+    '<div class="home-stat ' + (prazdne > 0 ? 'warn' : '') + '" onclick="switchTab(\'prehled\')">' +
+      '<div class="home-stat-num">' + prazdne + '</div>' +
+      '<div class="home-stat-label">Nula ks</div>' +
+    '</div>' +
+    '<div class="home-stat" onclick="switchTab(\'historie\')">' +
+      '<div class="home-stat-num">' + pohybyDnes + '</div>' +
+      '<div class="home-stat-label">Dnes</div>' +
+    '</div>';
 }
 
 function populateFilters() {
@@ -1386,7 +1901,8 @@ function populateFilters() {
 // === ACTION SELECTOR ===
 function setAction(act) {
   STATE.action = act;
-  var btns = document.querySelectorAll('.action-btn');
+  // Podporuj jak staré action-btn tak nové action-card
+  var btns = document.querySelectorAll('.action-btn, .action-card');
   for (var i = 0; i < btns.length; i++) {
     btns[i].classList.toggle('active', btns[i].getAttribute('data-act') === act);
   }
@@ -1705,7 +2221,7 @@ function autoFetch() {
       var activeTab = document.querySelector('.tab.active');
       if (activeTab) {
         var t = activeTab.getAttribute('data-tab');
-        if (t === 'scan') renderRecentPohyby();
+        if (t === 'scan') { renderHomeStats(); renderRecentPohyby(); }
         if (t === 'stav') renderStav();
         if (t === 'historie') renderHistorie();
         if (t === 'prehled') renderPrehled();
@@ -2476,6 +2992,429 @@ function esc(s) {
   if (s == null) return '';
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// === POSTUPNÁ INVENTURA ===
+var INV = {
+  active: false,
+  ids: [],
+  index: 0,
+  done: [],
+  filter: { kategorie: '', typ: '' },
+  startedAt: null
+};
+var LS_INV = 'll_et_inventura';
+
+function invSaveState() {
+  if (!INV.active) {
+    localStorage.removeItem(LS_INV);
+    return;
+  }
+  try { localStorage.setItem(LS_INV, JSON.stringify(INV)); } catch (e) {}
+}
+
+function invLoadState() {
+  try {
+    var s = localStorage.getItem(LS_INV);
+    if (!s) return null;
+    return JSON.parse(s);
+  } catch (e) { return null; }
+}
+
+function invStart() {
+  if (STATE.etikety.length === 0) {
+    toast('Žádná data. Synchronizuj nejdřív.', 'error');
+    return;
+  }
+  // Zkontrolovat rozdělanou inventuru
+  var saved = invLoadState();
+  if (saved && saved.active && saved.ids && saved.ids.length > 0 && saved.index < saved.ids.length) {
+    invShowResume(saved);
+    return;
+  }
+  invShowSetup();
+}
+
+function invShowResume(saved) {
+  document.getElementById('inv-overlay').classList.add('active');
+  var done = saved.done.length;
+  var total = saved.ids.length;
+  var html = '<div class="inv-resume-card">' +
+    '<div style="font-weight:800;font-size:15px;color:var(--ll-brown);margin-bottom:6px">📋 Máš rozdělanou inventuru</div>' +
+    '<div style="font-size:13px;color:var(--ll-brown);margin-bottom:10px">Hotovo ' + done + ' z ' + total + ' etiket. Můžeš pokračovat nebo začít znovu.</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+      '<button class="inv-btn primary" onclick="invResume()">▶ Pokračovat</button>' +
+      '<button class="inv-btn skip" onclick="invShowSetup()">🔄 Začít znovu</button>' +
+    '</div>' +
+  '</div>';
+  document.getElementById('inv-body').innerHTML = html;
+  document.getElementById('inv-title').textContent = 'Rozdělaná inventura';
+  document.getElementById('inv-progress').textContent = '';
+  document.getElementById('inv-progress-fill').style.width = '0%';
+}
+
+function invResume() {
+  var saved = invLoadState();
+  if (!saved) { invShowSetup(); return; }
+  INV.active = saved.active;
+  INV.ids = saved.ids;
+  INV.index = saved.index;
+  INV.done = saved.done;
+  INV.filter = saved.filter;
+  INV.startedAt = saved.startedAt;
+  invShowItem();
+}
+
+function invShowSetup() {
+  document.getElementById('inv-overlay').classList.add('active');
+  document.getElementById('inv-title').textContent = 'Příprava inventury';
+  document.getElementById('inv-progress').textContent = '';
+  document.getElementById('inv-progress-fill').style.width = '0%';
+
+  // Zjisti kategorie a typy
+  var kategorie = {};
+  var typy = {};
+  for (var i = 0; i < STATE.etikety.length; i++) {
+    var e = STATE.etikety[i];
+    if (e.kategorie) kategorie[e.kategorie] = (kategorie[e.kategorie] || 0) + 1;
+    if (e.typ) typy[e.typ] = (typy[e.typ] || 0) + 1;
+  }
+
+  var html = '<div class="inv-setup-card">' +
+    '<div style="font-weight:800;font-size:15px;color:var(--ll-brown);margin-bottom:14px">Co chceš inventovat?</div>' +
+
+    '<div class="inv-filter-group">' +
+      '<div class="inv-filter-label">Kategorie</div>' +
+      '<div class="inv-filter-options" id="inv-cat-opts">' +
+        '<button class="inv-filter-chip active" data-cat="" onclick="invSetFilter(\'kategorie\',\'\')">Všechny (' + STATE.etikety.length + ')</button>';
+
+  var katKeys = [];
+  for (var k in kategorie) katKeys.push(k);
+  katKeys.sort();
+  for (var kk = 0; kk < katKeys.length; kk++) {
+    html += '<button class="inv-filter-chip" data-cat="' + esc(katKeys[kk]) + '" onclick="invSetFilter(\'kategorie\',\'' + esc(katKeys[kk]).replace(/'/g, "\\'") + '\')">' +
+      esc(katKeys[kk]) + ' (' + kategorie[katKeys[kk]] + ')</button>';
+  }
+  html += '</div></div>';
+
+  html += '<div class="inv-filter-group">' +
+    '<div class="inv-filter-label">Typ etikety</div>' +
+    '<div class="inv-filter-options" id="inv-typ-opts">' +
+      '<button class="inv-filter-chip active" data-typ="" onclick="invSetFilter(\'typ\',\'\')">Oba</button>';
+  var typKeys = [];
+  for (var t in typy) typKeys.push(t);
+  typKeys.sort();
+  for (var tk = 0; tk < typKeys.length; tk++) {
+    html += '<button class="inv-filter-chip" data-typ="' + esc(typKeys[tk]) + '" onclick="invSetFilter(\'typ\',\'' + esc(typKeys[tk]).replace(/'/g, "\\'") + '\')">' +
+      esc(typKeys[tk]) + ' (' + typy[typKeys[tk]] + ')</button>';
+  }
+  html += '</div></div>';
+
+  html += '<div id="inv-count-info" style="font-size:13px;color:var(--ll-gray);text-align:center;margin:14px 0">' +
+    'Bude inventováno: <strong>' + STATE.etikety.length + '</strong> etiket</div>';
+
+  html += '<button class="inv-start-btn" onclick="invDoStart()">▶ Začít inventuru</button>';
+  html += '</div>';
+
+  document.getElementById('inv-body').innerHTML = html;
+  INV.filter = { kategorie: '', typ: '' };
+}
+
+function invSetFilter(key, val) {
+  INV.filter[key] = val;
+  // Update active chipy
+  var selector = key === 'kategorie' ? '#inv-cat-opts .inv-filter-chip' : '#inv-typ-opts .inv-filter-chip';
+  var chips = document.querySelectorAll(selector);
+  for (var i = 0; i < chips.length; i++) {
+    var chipVal = chips[i].getAttribute(key === 'kategorie' ? 'data-cat' : 'data-typ');
+    chips[i].classList.toggle('active', chipVal === val);
+  }
+  // Update count
+  var n = invFilteredCount();
+  document.getElementById('inv-count-info').innerHTML =
+    'Bude inventováno: <strong>' + n + '</strong> etiket';
+}
+
+function invFilteredCount() {
+  var n = 0;
+  for (var i = 0; i < STATE.etikety.length; i++) {
+    var e = STATE.etikety[i];
+    if (INV.filter.kategorie && e.kategorie !== INV.filter.kategorie) continue;
+    if (INV.filter.typ && e.typ !== INV.filter.typ) continue;
+    n++;
+  }
+  return n;
+}
+
+function invDoStart() {
+  var ids = [];
+  for (var i = 0; i < STATE.etikety.length; i++) {
+    var e = STATE.etikety[i];
+    if (INV.filter.kategorie && e.kategorie !== INV.filter.kategorie) continue;
+    if (INV.filter.typ && e.typ !== INV.filter.typ) continue;
+    ids.push(e.id);
+  }
+  if (ids.length === 0) { toast('Žádné etikety nevyhovují', 'error'); return; }
+
+  // Seřaď podle kódu produktu
+  ids.sort(function (a, b) {
+    var ea = findEtiketa(a);
+    var eb = findEtiketa(b);
+    var ka = ea ? parseInt(ea.kod_produktu, 10) || 0 : 0;
+    var kb = eb ? parseInt(eb.kod_produktu, 10) || 0 : 0;
+    if (ka !== kb) return ka - kb;
+    return String(a).localeCompare(String(b));
+  });
+
+  INV.active = true;
+  INV.ids = ids;
+  INV.index = 0;
+  INV.done = [];
+  INV.startedAt = new Date().toISOString();
+  invSaveState();
+  invShowItem();
+}
+
+function invShowItem() {
+  if (INV.index >= INV.ids.length) {
+    invShowSummary();
+    return;
+  }
+  var id = INV.ids[INV.index];
+  var et = findEtiketa(id);
+  if (!et) {
+    INV.index++;
+    invShowItem();
+    return;
+  }
+
+  var prog = (INV.done.length / INV.ids.length) * 100;
+  document.getElementById('inv-title').textContent = 'Postupná inventura';
+  document.getElementById('inv-progress').textContent = (INV.index + 1) + ' / ' + INV.ids.length;
+  document.getElementById('inv-progress-fill').style.width = prog + '%';
+
+  var imgHtml = et.obrazek_url
+    ? '<img class="inv-img" src="' + esc(et.obrazek_url) + '" alt="" onerror="this.outerHTML=\'<div class=&quot;inv-img-empty&quot;>🏷️</div>\'">'
+    : '<div class="inv-img-empty">🏷️</div>';
+
+  var meta = '';
+  if (et.typ) meta += '<span class="inv-meta-chip">' + esc(et.typ) + '</span>';
+  if (et.kategorie) meta += '<span class="inv-meta-chip">' + esc(et.kategorie) + '</span>';
+
+  var html =
+    '<div class="inv-img-wrap">' + imgHtml + '</div>' +
+    '<div class="inv-id">' + esc(et.id) + '</div>' +
+    '<div class="inv-nazev">' + esc(et.nazev) + '</div>' +
+    '<div class="inv-meta">' + meta + '</div>' +
+
+    '<div class="inv-current">' +
+      '<div>' +
+        '<div class="inv-current-label">V systému teď</div>' +
+        '<div class="inv-current-val">' + et.stav + ' ks</div>' +
+      '</div>' +
+      '<div style="font-size:24px">📦</div>' +
+    '</div>' +
+
+    '<div class="inv-input-label">Napočítáno fyzicky</div>' +
+    '<div class="qty-row">' +
+      '<button class="qty-btn" onclick="invAdj(-1)">−</button>' +
+      '<input type="number" class="qty-input" id="inv-qty" value="' + et.stav + '" min="0" oninput="">' +
+      '<button class="qty-btn" onclick="invAdj(1)">+</button>' +
+    '</div>' +
+    '<div class="qty-quick">' +
+      '<button class="qty-quick-btn" onclick="invAddQty(50)">+50</button>' +
+      '<button class="qty-quick-btn" onclick="invAddQty(100)">+100</button>' +
+      '<button class="qty-quick-btn" onclick="invAddQty(500)">+500</button>' +
+      '<button class="qty-quick-btn" onclick="invAddQty(1000)">+1k</button>' +
+      '<button class="qty-quick-btn" onclick="invAddQty(2000)">+2k</button>' +
+    '</div>' +
+
+    '<div class="inv-actions-primary">' +
+      '<button class="inv-btn same" onclick="invSame()">' +
+        '<span class="inv-btn-icon">✓</span>' +
+        '<span>Stejné</span>' +
+        '<span class="inv-btn-sub">' + et.stav + ' ks</span>' +
+      '</button>' +
+      '<button class="inv-btn primary" onclick="invSave()">' +
+        '<span class="inv-btn-icon">💾</span>' +
+        '<span>Uložit a další</span>' +
+      '</button>' +
+    '</div>' +
+    '<div class="inv-actions-secondary">' +
+      '<button class="inv-btn back" onclick="invPrev()" ' + (INV.index === 0 ? 'disabled style="opacity:0.4"' : '') + '>' +
+        '<span class="inv-btn-icon">←</span>' +
+        '<span>Zpět</span>' +
+      '</button>' +
+      '<button class="inv-btn skip" onclick="invSkip()">' +
+        '<span class="inv-btn-icon">⏭</span>' +
+        '<span>Přeskočit</span>' +
+      '</button>' +
+    '</div>';
+
+  document.getElementById('inv-body').innerHTML = html;
+  document.getElementById('inv-body').scrollTop = 0;
+}
+
+function invAdj(d) {
+  var inp = document.getElementById('inv-qty');
+  var v = parseInt(inp.value, 10) || 0;
+  inp.value = Math.max(0, v + d);
+}
+
+function invAddQty(n) {
+  var inp = document.getElementById('inv-qty');
+  var v = parseInt(inp.value, 10) || 0;
+  inp.value = Math.max(0, v + n);
+}
+
+function invSame() {
+  var id = INV.ids[INV.index];
+  var et = findEtiketa(id);
+  if (!et) { INV.index++; invShowItem(); return; }
+  // Žádný pohyb se nezapisuje - jen označit jako hotové
+  INV.done.push({ id: id, akce: 'stejne', stav: et.stav, stavPred: et.stav });
+  INV.index++;
+  invSaveState();
+  invShowItem();
+}
+
+function invSave() {
+  var id = INV.ids[INV.index];
+  var et = findEtiketa(id);
+  if (!et) { INV.index++; invShowItem(); return; }
+  var inp = document.getElementById('inv-qty');
+  var stav = parseInt(inp.value, 10);
+  if (isNaN(stav) || stav < 0) { toast('Zadej platné číslo', 'error'); return; }
+  if (stav === et.stav) {
+    // Stejné, jako kliknutí Stejné
+    INV.done.push({ id: id, akce: 'stejne', stav: stav, stavPred: et.stav });
+  } else {
+    INV.done.push({ id: id, akce: 'uloz', stav: stav, stavPred: et.stav });
+
+    // Zapiš inventurní pohyb (typ =)
+    var pohyb = {
+      action: 'pohyb',
+      id: id,
+      typ_pohybu: '=',
+      mnozstvi: stav,
+      uzivatel: STATE.user.jmeno,
+      poznamka: 'inventura',
+      timestamp: new Date().toISOString()
+    };
+    et.stav = stav;
+    STATE.pohyby.unshift({
+      timestamp: pohyb.timestamp,
+      id: id,
+      nazev: et.nazev,
+      typ_pohybu: '=',
+      mnozstvi: stav,
+      stav_pred: pohyb.timestamp ? et.stav : 0,
+      stav_po: stav,
+      uzivatel: STATE.user.jmeno,
+      poznamka: 'inventura',
+      pending: !STATE.online
+    });
+    saveLocal();
+    if (STATE.online && STATE.url) sendPohyb(pohyb);
+    else {
+      STATE.fronta.push(pohyb);
+      localStorage.setItem(LS.FRONTA, JSON.stringify(STATE.fronta));
+      updateQueueBadge();
+    }
+  }
+  INV.index++;
+  invSaveState();
+  invShowItem();
+}
+
+function invSkip() {
+  var id = INV.ids[INV.index];
+  var et = findEtiketa(id);
+  INV.done.push({ id: id, akce: 'skip', stav: null, stavPred: et ? et.stav : 0 });
+  INV.index++;
+  invSaveState();
+  invShowItem();
+}
+
+function invPrev() {
+  if (INV.index === 0) return;
+  INV.index--;
+  // Pokud byl ten poslední záznam v done, smaž ho (uživatel ho přepíše)
+  if (INV.done.length > 0) {
+    INV.done.pop();
+  }
+  invSaveState();
+  invShowItem();
+}
+
+function invShowSummary() {
+  var celkem = INV.done.length;
+  var zmeneno = 0;
+  var stejne = 0;
+  var preskoceno = 0;
+  var diffs = [];
+  for (var i = 0; i < INV.done.length; i++) {
+    var d = INV.done[i];
+    if (d.akce === 'uloz') {
+      zmeneno++;
+      var diff = d.stav - d.stavPred;
+      diffs.push({ id: d.id, diff: diff, stavPred: d.stavPred, stav: d.stav });
+    } else if (d.akce === 'stejne') {
+      stejne++;
+    } else {
+      preskoceno++;
+    }
+  }
+  diffs.sort(function (a, b) { return Math.abs(b.diff) - Math.abs(a.diff); });
+
+  document.getElementById('inv-title').textContent = '✓ Inventura hotová';
+  document.getElementById('inv-progress').textContent = '';
+  document.getElementById('inv-progress-fill').style.width = '100%';
+
+  var html =
+    '<div class="inv-sum-card" style="background:linear-gradient(135deg,#F0FFF4 0%,#DDF5E2 100%);border:2px solid var(--ll-green)">' +
+      '<div style="font-size:48px;margin-bottom:8px">🎉</div>' +
+      '<div class="inv-sum-num">' + celkem + '</div>' +
+      '<div class="inv-sum-label">Etiket inventováno</div>' +
+    '</div>' +
+
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">' +
+      '<div class="inv-sum-card"><div class="inv-sum-num" style="color:var(--ll-orange)">' + zmeneno + '</div><div class="inv-sum-label">Změny</div></div>' +
+      '<div class="inv-sum-card"><div class="inv-sum-num" style="color:var(--ll-green)">' + stejne + '</div><div class="inv-sum-label">Beze změn</div></div>' +
+      '<div class="inv-sum-card"><div class="inv-sum-num" style="color:var(--ll-gray)">' + preskoceno + '</div><div class="inv-sum-label">Přeskočeno</div></div>' +
+    '</div>';
+
+  if (diffs.length > 0) {
+    html += '<div class="section-label">Největší změny</div>';
+    var topN = Math.min(10, diffs.length);
+    for (var j = 0; j < topN; j++) {
+      var dd = diffs[j];
+      var et = findEtiketa(dd.id);
+      var arrCls = dd.diff > 0 ? 'up' : 'down';
+      var arrChar = dd.diff > 0 ? '+' + dd.diff : String(dd.diff);
+      html += '<div class="inv-diff-row">' +
+        '<div class="inv-diff-arrow ' + arrCls + '">' + arrChar + '</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:13px;font-weight:600;color:var(--ll-brown);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' +
+            (et ? esc(et.nazev) : esc(dd.id)) + '</div>' +
+          '<div style="font-size:11px;color:var(--ll-gray)">' + esc(dd.id) + ' · ' + dd.stavPred + ' → ' + dd.stav + ' ks</div>' +
+        '</div>' +
+      '</div>';
+    }
+  }
+
+  html += '<button class="inv-start-btn" onclick="invClose()" style="margin-top:18px">Zavřít</button>';
+
+  document.getElementById('inv-body').innerHTML = html;
+
+  // Vyčisti saved state
+  INV.active = false;
+  invSaveState();
+}
+
+function invClose() {
+  // Nevymaž rozdělaný stav, ať může pokračovat
+  document.getElementById('inv-overlay').classList.remove('active');
 }
 
 function toast(msg, kind) {
