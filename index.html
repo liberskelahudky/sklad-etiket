@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#3B1A0D">
-<title>LL Etikety - inventura v16.2</title>
+<title>LL Etikety - inventura v16.3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -533,7 +533,14 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
   display: flex;
   flex-direction: column;
   gap: 4px;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.15s;
+  position: relative;
 }
+.dash-card:hover { box-shadow: 0 4px 12px rgba(59,26,13,0.12); }
+.dash-card:active { transform: scale(0.98); }
+.dash-card::after { content: '›'; position: absolute; top: 12px; right: 14px; color: var(--ll-gray-light); font-size: 18px; font-weight: 300; opacity: 0; transition: opacity 0.15s; }
+.dash-card:hover::after { opacity: 0.6; }
 .dash-card.warning { background: linear-gradient(135deg, #FFF6F0 0%, #FFEDDC 100%); border-left: 4px solid var(--ll-orange); }
 .dash-card.danger { background: linear-gradient(135deg, #FFF0F0 0%, #FFDADA 100%); border-left: 4px solid var(--ll-red); }
 .dash-card.success { background: linear-gradient(135deg, #F0FFF4 0%, #DDF5E2 100%); border-left: 4px solid var(--ll-green); }
@@ -1545,7 +1552,7 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
           <div>Etiket v cache: <strong id="info-etiket">0</strong></div>
           <div>Pohybů: <strong id="info-pohybu">0</strong></div>
           <div>Ve frontě: <strong id="info-fronta">0</strong></div>
-          <div>Verze: <strong>16.2</strong></div>
+          <div>Verze: <strong>16.3</strong></div>
         </div>
       </div>
 
@@ -1565,7 +1572,7 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
       <span class="tab-icon">📊</span><span>Přehled</span>
     </button>
     <button class="tab" data-tab="stav" onclick="switchTab('stav')">
-      <span class="tab-icon">📋</span><span>Stav</span>
+      <span class="tab-icon">📋</span><span>Sklad</span>
     </button>
     <button class="tab" data-tab="historie" onclick="switchTab('historie')">
       <span class="tab-icon">🕐</span><span>Historie</span>
@@ -2655,22 +2662,22 @@ function renderPrehled() {
 
   // === HLAVNÍ KARTY ===
   html += '<div class="dash-grid">';
-  html += '<div class="dash-card info">' +
+  html += '<div class="dash-card info" onclick="switchTab(\'stav\')">' +
     '<div class="dash-label">Etiket celkem</div>' +
     '<div class="dash-num">' + celkem + '</div>' +
     '<div class="dash-sub">' + sObrazkem + ' s obrázkem</div>' +
   '</div>';
-  html += '<div class="dash-card success">' +
+  html += '<div class="dash-card success" onclick="switchTab(\'stav\')">' +
     '<div class="dash-label">Kusů na skladě</div>' +
     '<div class="dash-num">' + totalKs.toLocaleString('cs-CZ') + '</div>' +
     '<div class="dash-sub">napříč všemi etiketami</div>' +
   '</div>';
-  html += '<div class="dash-card warning">' +
+  html += '<div class="dash-card warning" onclick="switchTab(\'objednat\')">' +
     '<div class="dash-label">Nula kusů</div>' +
     '<div class="dash-num">' + prazdne + '</div>' +
     '<div class="dash-sub">je třeba objednat</div>' +
   '</div>';
-  html += '<div class="dash-card danger">' +
+  html += '<div class="dash-card danger" onclick="switchTab(\'objednat\')">' +
     '<div class="dash-label">Pod minimem</div>' +
     '<div class="dash-num">' + podMin + '</div>' +
     '<div class="dash-sub">brzy dojde</div>' +
@@ -2680,11 +2687,11 @@ function renderPrehled() {
   // === POHYBY ZA 7 DNÍ ===
   html += '<div class="dash-section-title"><span class="dash-section-icon">📈</span>Aktivita za posledních 7 dní</div>';
   html += '<div class="dash-grid">';
-  html += '<div class="dash-card">' +
+  html += '<div class="dash-card" onclick="switchTab(\'historie\')">' +
     '<div class="dash-label">Pohybů</div>' +
     '<div class="dash-num">' + pohyb7 + '</div>' +
   '</div>';
-  html += '<div class="dash-card success">' +
+  html += '<div class="dash-card success" onclick="switchTab(\'historie\')">' +
     '<div class="dash-label">Naskladněno</div>' +
     '<div class="dash-num">+' + pohyb7Plus + '</div>' +
     '<div class="dash-sub">ks · vyskl.: ' + pohyb7Minus + ' ks</div>' +
@@ -2929,9 +2936,10 @@ function renderOrder() {
     if (minimum === 0) bezMin++;
   }
   podMin.sort(function (a, b) {
-    var ra = (Number(a.stav) || 0) / Math.max(1, Number(a.minimum) || 1);
-    var rb = (Number(b.stav) || 0) / Math.max(1, Number(b.minimum) || 1);
-    return ra - rb; // nejhorší poměr stav/min nahoře
+    // Řadit podle navrhovaného množství k objednání (DESC) - nejvíc chybějících nahoru
+    var orderA = Math.max(0, 3 * (Number(a.minimum) || 0) - (Number(a.stav) || 0));
+    var orderB = Math.max(0, 3 * (Number(b.minimum) || 0) - (Number(b.stav) || 0));
+    return orderB - orderA;
   });
 
   // Statistiky
