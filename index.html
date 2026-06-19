@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#3B1A0D">
-<title>LL Etikety - inventura v16.6</title>
+<title>LL Etikety - inventura v16.7</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1629,7 +1629,7 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
           <div>Etiket v cache: <strong id="info-etiket">0</strong></div>
           <div>Pohybů: <strong id="info-pohybu">0</strong></div>
           <div>Ve frontě: <strong id="info-fronta">0</strong></div>
-          <div>Verze: <strong>16.6</strong></div>
+          <div>Verze: <strong>16.7</strong></div>
         </div>
       </div>
 
@@ -1839,12 +1839,13 @@ function handleUrlParams() {
       if (window.history && window.history.replaceState) {
         window.history.replaceState({}, '', window.location.pathname);
       }
-      // Pokud nemáme etikety v cache, počkat na sync
+      // Vyzkoušíme okamžitě (pokud máme cache) i s fresh syncem (openConfirmFor si poradí sám)
+      var doOpen = function () { openConfirmFor(id); };
       if (STATE.etikety.length === 0) {
         toast('Načítám data, počkej…');
-        setTimeout(function () { openConfirmFor(id); }, 2000);
+        setTimeout(doOpen, 2500);
       } else {
-        openConfirmFor(id);
+        doOpen();
       }
     }
   } catch (e) { /* IE může selhat na URLSearchParams */ }
@@ -2206,10 +2207,40 @@ function openManualSelect() {
 }
 
 // === CONFIRM OVERLAY ===
+function refetchEtiketyAndRetry(code) {
+  if (!STATE.url) return;
+  fetch(STATE.url + '?action=getEtikety&t=' + Date.now())
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d.ok && d.etikety) {
+        STATE.etikety = d.etikety;
+        try { localStorage.setItem(LS.ETIKETY, JSON.stringify(d.etikety)); } catch (e) {}
+        var et = findEtiketa(code);
+        if (et) {
+          toast('Načteno ' + d.etikety.length + ' etiket - našla jsem ji', 'success');
+          openConfirmFor(code);
+        } else {
+          toast('Etiketa "' + code + '" neexistuje ani v Sheets', 'error');
+        }
+      } else {
+        toast('Sync selhal: ' + (d.error || 'neznámá chyba'), 'error');
+      }
+    })
+    .catch(function (err) {
+      toast('Chyba spojení: ' + err.message, 'error');
+    });
+}
+
 function openConfirmFor(code) {
   var et = findEtiketa(code);
   if (!et) {
-    toast('Etiketa "' + code + '" nenalezena', 'error');
+    // Etiketa není v cache - pokud jsme online, zkus fresh sync
+    if (STATE.url && STATE.online) {
+      toast('Etiketa není v cache, načítám aktuální data…');
+      refetchEtiketyAndRetry(code);
+    } else {
+      toast('Etiketa "' + code + '" nenalezena. Synchronizuj se Sheets a zkus znovu.', 'error');
+    }
     return;
   }
   STATE.currentEt = et;
@@ -3466,19 +3497,23 @@ function findEtiketa(code) {
   if (c.indexOf('?id=') > -1 || c.indexOf('&id=') > -1) {
     try {
       var m = c.match(/[?&]id=([^&]+)/);
-      if (m) c = decodeURIComponent(m[1]);
+      if (m) c = decodeURIComponent(m[1]).trim();
     } catch (e) {}
   }
 
+  // Plný match (trim na obou stranách)
   for (var i = 0; i < STATE.etikety.length; i++) {
     var e = STATE.etikety[i];
-    if (e.id === c || e.ean === c || String(e.kod_produktu) === c) return e;
+    var eId = String(e.id || '').trim();
+    var eEan = String(e.ean || '').trim();
+    var eKod = String(e.kod_produktu || '').trim();
+    if (eId === c || eEan === c || eKod === c) return e;
   }
-  // Case insensitive
+  // Case insensitive na ID
   var cl = c.toLowerCase();
   for (var j = 0; j < STATE.etikety.length; j++) {
     var e2 = STATE.etikety[j];
-    if (String(e2.id).toLowerCase() === cl) return e2;
+    if (String(e2.id || '').trim().toLowerCase() === cl) return e2;
   }
   return null;
 }
