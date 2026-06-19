@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#3B1A0D">
-<title>LL Etikety - inventura v16.7</title>
+<title>LL Etikety - inventura v17.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -318,6 +318,36 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 }
 .inv-save-big:active { transform: scale(0.98); box-shadow: 0 2px 8px rgba(232,85,32,0.3); }
 .inv-save-big-text { font-size: 16px; }
+
+/* === NOT FOUND OVERLAY === */
+.notfound-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 1500; display: none; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.notfound-overlay.active { display: flex; }
+.notfound-sheet {
+  background: white; border-radius: 14px; max-width: 460px; width: 100%;
+  max-height: 85vh; overflow-y: auto; padding: 0;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+}
+.notfound-head {
+  display: flex; gap: 12px; align-items: center; padding: 18px 20px 14px;
+  border-bottom: 2px solid var(--ll-cream);
+}
+.notfound-icon { font-size: 36px; flex-shrink: 0; }
+.notfound-title { font-size: 18px; font-weight: 800; color: var(--ll-dark); }
+.notfound-subtitle { font-size: 12px; color: var(--ll-gray); margin-top: 2px; }
+#notfound-body { padding: 16px 20px; }
+.nf-section { margin-bottom: 14px; }
+.nf-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ll-gray); font-weight: 700; margin-bottom: 4px; }
+.nf-code { font-family: 'Courier New', monospace; font-size: 15px; font-weight: 800; color: var(--ll-orange); background: #fff3e8; padding: 8px 12px; border-radius: 8px; word-break: break-all; }
+.nf-info { font-size: 13px; color: var(--ll-dark); }
+.nf-suggest { display: block; width: 100%; background: var(--ll-cream); border: none; border-radius: 8px; padding: 10px 12px; margin-top: 6px; text-align: left; cursor: pointer; font-family: inherit; font-size: 13px; color: var(--ll-dark); transition: background 0.15s; }
+.nf-suggest:hover { background: var(--ll-cream-dark); }
+.nf-suggest strong { color: var(--ll-orange); font-family: 'Courier New', monospace; }
+.notfound-actions { padding: 12px 20px 18px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--ll-cream); }
+.nf-action-secondary { background: var(--ll-cream); color: var(--ll-dark); border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; font-family: inherit; }
 
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
@@ -1614,11 +1644,18 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
     <div class="tab-content" data-tab="nast">
       <div class="card">
         <div class="card-title">Připojení k Google Sheets</div>
+        <p style="font-size:12px;color:var(--ll-gray);margin-bottom:10px;line-height:1.4">
+          Apka má <strong>výchozí URL nastavenou v kódu</strong>, takže každý kolega, kdo apku otevře, ji má automaticky připojenou.
+          Měň jen pokud máš zvláštní důvod (např. nasazená jiná Apps Script kopie).
+        </p>
         <div class="input-group">
           <label class="input-label">Apps Script URL</label>
           <input type="text" id="ns-url" class="input-text" placeholder="https://script.google.com/macros/s/.../exec">
         </div>
-        <button class="save-btn" onclick="saveSettings()">Uložit nastavení</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <button class="save-btn" onclick="saveSettings()" style="margin:0">Uložit URL</button>
+          <button class="save-btn" onclick="resetUrl()" style="margin:0;background:var(--ll-cream-dark);color:var(--ll-dark)">Resetovat na výchozí</button>
+        </div>
         <button class="sync-btn" onclick="syncNow()">🔄 Synchronizovat hned</button>
         <div id="sync-info" style="font-size:12px;color:var(--ll-gray);text-align:center;margin-top:10px"></div>
       </div>
@@ -1629,7 +1666,7 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
           <div>Etiket v cache: <strong id="info-etiket">0</strong></div>
           <div>Pohybů: <strong id="info-pohybu">0</strong></div>
           <div>Ve frontě: <strong id="info-fronta">0</strong></div>
-          <div>Verze: <strong>16.7</strong></div>
+          <div>Verze: <strong>17.0</strong></div>
         </div>
       </div>
 
@@ -1695,6 +1732,23 @@ input, select, textarea { font-family: inherit; font-size: 16px; }
 </div>
 
 <!-- CONFIRM OVERLAY -->
+<!-- NOT FOUND OVERLAY -->
+<div class="notfound-overlay" id="notfound-overlay" onclick="if(event.target===this)closeNotFound()">
+  <div class="notfound-sheet" onclick="event.stopPropagation()">
+    <div class="notfound-head">
+      <div class="notfound-icon">❓</div>
+      <div>
+        <div class="notfound-title">Etiketa nenalezena</div>
+        <div class="notfound-subtitle">Skenovaný kód neodpovídá žádné etiketě v Sheets</div>
+      </div>
+    </div>
+    <div id="notfound-body"></div>
+    <div class="notfound-actions">
+      <button class="nf-action-secondary" onclick="closeNotFound()">Zavřít</button>
+    </div>
+  </div>
+</div>
+
 <div class="confirm-overlay" id="confirm-overlay" onclick="if(event.target===this)closeConfirm()">
   <div class="confirm-sheet" onclick="event.stopPropagation()">
     <div class="confirm-img-wrap" id="conf-img-wrap">
@@ -1777,9 +1831,19 @@ var LS = {
   LAST_SYNC: 'll_et_last_sync'
 };
 
+// === DEFAULT KONFIGURACE ===
+// Hardcoded URL pro Apps Script - každý kdo otevře apku má sync nastavený automaticky
+// Pokud URL přesuneš (redeploy), uprav tady a uploaduj nový soubor
+var DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbymaImsce1x_Gbo4NVMRZBz0OoaHlw3MSZ4JuI7d9HqRA8ev4_Sr-rN1yJQXDffBbpE/exec';
+
 // === INIT ===
 function init() {
-  STATE.url = localStorage.getItem(LS.URL) || '';
+  // URL: nejdřív localStorage (vlastní override), jinak default z kódu
+  STATE.url = localStorage.getItem(LS.URL) || DEFAULT_APPS_SCRIPT_URL;
+  // Pokud localStorage byl prázdný, ulož default aby diagnostika ho viděla
+  if (!localStorage.getItem(LS.URL)) {
+    try { localStorage.setItem(LS.URL, DEFAULT_APPS_SCRIPT_URL); } catch (e) {}
+  }
   STATE.user = JSON.parse(localStorage.getItem(LS.USER) || 'null');
   STATE.etikety = JSON.parse(localStorage.getItem(LS.ETIKETY) || '[]');
   STATE.pohyby = JSON.parse(localStorage.getItem(LS.POHYBY) || '[]');
@@ -2217,17 +2281,20 @@ function refetchEtiketyAndRetry(code) {
         try { localStorage.setItem(LS.ETIKETY, JSON.stringify(d.etikety)); } catch (e) {}
         var et = findEtiketa(code);
         if (et) {
-          toast('Načteno ' + d.etikety.length + ' etiket - našla jsem ji', 'success');
+          toast('Našla jsem ji - načteno ' + d.etikety.length + ' etiket', 'success');
           openConfirmFor(code);
         } else {
-          toast('Etiketa "' + code + '" neexistuje ani v Sheets', 'error');
+          // Po fresh sync taky nenajde - ukáž detail
+          showNotFoundError(code, true);
         }
       } else {
         toast('Sync selhal: ' + (d.error || 'neznámá chyba'), 'error');
+        showNotFoundError(code, false);
       }
     })
     .catch(function (err) {
       toast('Chyba spojení: ' + err.message, 'error');
+      showNotFoundError(code, false);
     });
 }
 
@@ -2239,7 +2306,7 @@ function openConfirmFor(code) {
       toast('Etiketa není v cache, načítám aktuální data…');
       refetchEtiketyAndRetry(code);
     } else {
-      toast('Etiketa "' + code + '" nenalezena. Synchronizuj se Sheets a zkus znovu.', 'error');
+      showNotFoundError(code, false);
     }
     return;
   }
@@ -3420,6 +3487,14 @@ function saveSettings() {
   if (url) syncNow();
 }
 
+function resetUrl() {
+  STATE.url = DEFAULT_APPS_SCRIPT_URL;
+  try { localStorage.setItem(LS.URL, DEFAULT_APPS_SCRIPT_URL); } catch (e) {}
+  document.getElementById('ns-url').value = DEFAULT_APPS_SCRIPT_URL;
+  toast('Resetováno na výchozí URL', 'success');
+  syncNow();
+}
+
 function renderInfo() {
   document.getElementById('info-etiket').textContent = STATE.etikety.length;
   document.getElementById('info-pohybu').textContent = STATE.pohyby.length;
@@ -3490,6 +3565,13 @@ function normalizeForPdf(s) {
   });
 }
 
+function normalizeId(s) {
+  return String(s || '')
+    .replace(/^ll[-_. ]?/i, '')        // odstranit LL- / LL_ / LL. / LL prefix
+    .replace(/[^a-zA-Z0-9]/g, '')      // odstranit pomlčky, mezery, podtržítka, tečky
+    .toLowerCase();
+}
+
 function findEtiketa(code) {
   var c = String(code).trim();
 
@@ -3501,7 +3583,7 @@ function findEtiketa(code) {
     } catch (e) {}
   }
 
-  // Plný match (trim na obou stranách)
+  // 1) Přesný match
   for (var i = 0; i < STATE.etikety.length; i++) {
     var e = STATE.etikety[i];
     var eId = String(e.id || '').trim();
@@ -3509,13 +3591,76 @@ function findEtiketa(code) {
     var eKod = String(e.kod_produktu || '').trim();
     if (eId === c || eEan === c || eKod === c) return e;
   }
-  // Case insensitive na ID
+
+  // 2) Case insensitive
   var cl = c.toLowerCase();
   for (var j = 0; j < STATE.etikety.length; j++) {
     var e2 = STATE.etikety[j];
     if (String(e2.id || '').trim().toLowerCase() === cl) return e2;
   }
+
+  // 3) Normalizovaný match - odstranění LL- prefixu a non-alphanumeric
+  // Pokrývá staré QR s "LL-0094-H" když je v Sheets jen "0094-H" (a obráceně)
+  var cn = normalizeId(c);
+  if (cn.length > 0) {
+    for (var k = 0; k < STATE.etikety.length; k++) {
+      var e3 = STATE.etikety[k];
+      if (normalizeId(e3.id) === cn) return e3;
+    }
+  }
+
   return null;
+}
+
+// Persistent error info pro debug
+function showNotFoundError(code, attemptedSync) {
+  var ov = document.getElementById('notfound-overlay');
+  if (!ov) return;
+
+  // Vytvořit debug info
+  var first5 = STATE.etikety.slice(0, 5).map(function (e) { return e.id; }).join(', ');
+  var matchKodu = STATE.etikety.filter(function (e) {
+    var en = String(e.id || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    var cn = String(code).replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    return en.indexOf(cn) > -1 || cn.indexOf(en) > -1;
+  }).slice(0, 5);
+
+  var nearestHtml = matchKodu.length > 0
+    ? '<div class="nf-section"><div class="nf-label">Podobné ID v Sheets:</div>' +
+      matchKodu.map(function (e) {
+        return '<button class="nf-suggest" onclick="closeNotFound(); openConfirmFor(\'' + esc(e.id) + '\')">' +
+          '<strong>' + esc(e.id) + '</strong> · ' + esc(e.nazev || '') +
+        '</button>';
+      }).join('') + '</div>'
+    : '';
+
+  document.getElementById('notfound-body').innerHTML =
+    '<div class="nf-section">' +
+      '<div class="nf-label">Hledala jsem ID:</div>' +
+      '<div class="nf-code">' + esc(code) + '</div>' +
+    '</div>' +
+    '<div class="nf-section">' +
+      '<div class="nf-label">V cache mám:</div>' +
+      '<div class="nf-info">' + STATE.etikety.length + ' etiket' +
+      (first5 ? ' · např. ' + esc(first5) + '…' : '') + '</div>' +
+    '</div>' +
+    (attemptedSync ? '<div class="nf-section"><div class="nf-info" style="color:#888">✓ Zkusila jsem stáhnout aktuální data ze Sheets</div></div>' : '') +
+    nearestHtml +
+    '<div class="nf-section">' +
+      '<div class="nf-label">Co s tím:</div>' +
+      '<ul style="font-size:13px;color:#555;padding-left:18px;line-height:1.6;margin-top:6px">' +
+        '<li>Otevři Sheets a zkontroluj, že ID <strong>' + esc(code) + '</strong> existuje v listu Etikety</li>' +
+        '<li>Možná byla etiketa <strong>smazaná</strong>, <strong>přejmenovaná</strong>, nebo má extra mezeru</li>' +
+        '<li>Případně pošli mi screenshot tohohle okna, abych poznala co se stalo</li>' +
+      '</ul>' +
+    '</div>';
+
+  ov.classList.add('active');
+}
+
+function closeNotFound() {
+  var ov = document.getElementById('notfound-overlay');
+  if (ov) ov.classList.remove('active');
 }
 
 function esc(s) {
